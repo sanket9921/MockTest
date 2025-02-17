@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import TestGroupsPage from "../pages/TestGroupsPage";
 import TestsPage from "../pages/TestsPage";
-import TestDetailsPage from "../pages/TestDetailsPage";
+import AddQuestion from "../pages/AddQuestion";
 
 const AppRouter = () => {
   return (
@@ -9,7 +9,7 @@ const AppRouter = () => {
       <Routes>
         <Route path="/test-groups" element={<TestGroupsPage />} />
         <Route path="/tests/:groupId" element={<TestsPage />} />
-        <Route path="/addquestions" element={<TestDetailsPage />} />
+        <Route path="/addquestions/:testid" element={<AddQuestion />} />
       </Routes>
     </Router>
   );

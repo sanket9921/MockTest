@@ -1,5 +1,7 @@
 const { models } = require("../models"); // Import models
 const { uploadImageToCloudinary } = require("../services/imageService");
+const { addQuestionService } = require("../services/questionService");
+const { executeTransaction } = require("../utils/dbTransaction");
 // Create a new Question
 exports.createQuestion = async (req, res) => {
   try {
@@ -167,6 +169,21 @@ exports.addQuestion = async (req, res) => {
     return res
       .status(201)
       .json({ message: "Question added successfully!", question: newQuestion });
+  } catch (error) {
+    console.error("Error adding question:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.addQuestion2 = async (req, res) => {
+  try {
+    const question = await executeTransaction(async (transaction) => {
+      return await addQuestionService(req.body, req.files, transaction);
+    });
+
+    return res
+      .status(201)
+      .json({ message: "Question added successfully!", question });
   } catch (error) {
     console.error("Error adding question:", error);
     res.status(500).json({ error: "Internal Server Error" });

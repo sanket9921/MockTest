@@ -16,5 +16,13 @@ router.post(
   ]),
   questionController.addQuestion
 );
+router.post(
+  "/addquestion2",
+  upload.fields([
+    { name: "questionImage", maxCount: 1 },
+    { name: "optionImages", maxCount: 10 },
+  ]),
+  questionController.addQuestion2
+);
 
 module.exports = router;

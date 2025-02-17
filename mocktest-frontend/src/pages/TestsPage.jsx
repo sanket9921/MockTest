@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { createTest, fetchTestsByGroup } from "../services/testService.";
+import { useNavigate } from "react-router-dom";
 
 const TestsPage = () => {
   const { groupId } = useParams(); // Get test_group_id from URL
   const [tests, setTests] = useState([]);
   const [newTestName, setNewTestName] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadTests();
@@ -56,7 +58,11 @@ const TestsPage = () => {
       {/* List of Tests */}
       <ul>
         {tests.map((test) => (
-          <li key={test.id} className="mb-2">
+          <li
+            key={test.id}
+            className="mb-2"
+            onClick={() => navigate(`/addquestions/${test.id}`)}
+          >
             {test.name}
           </li>
         ))}
