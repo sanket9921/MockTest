@@ -19,5 +19,9 @@ router.put("/:id", correctAnswerController.updateCorrectAnswer);
 
 // Route to delete a correct answer
 router.delete("/:id", correctAnswerController.deleteCorrectAnswer);
+router.get(
+  "/getfibanswer/:question_id",
+  correctAnswerController.getAnswerOfFib
+);
 
 module.exports = router;

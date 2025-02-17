@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "question_id",
       onDelete: "CASCADE",
     });
-    Option.hasOne(models.CorrectAnswer, {
+    Option.hasOne(models.AnswersMCQMSQ, {
       foreignKey: "option_id",
       onDelete: "CASCADE",
     });

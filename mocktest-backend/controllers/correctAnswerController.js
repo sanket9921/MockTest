@@ -20,7 +20,7 @@ exports.createCorrectAnswer = async (req, res) => {
 exports.getCorrectAnswersByQuestionId = async (req, res) => {
   try {
     const { question_id } = req.params;
-    const correctAnswers = await models.CorrectAnswer.findAll({
+    const correctAnswers = await models.AnswersMCQMSQ.findAll({
       where: { question_id },
     });
     return res.status(200).json(correctAnswers);
@@ -73,6 +73,19 @@ exports.deleteCorrectAnswer = async (req, res) => {
 
     await correctAnswer.destroy();
     return res.status(200).json({ message: "Answer deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getAnswerOfFib = async (req, res) => {
+  try {
+    const { question_id } = req.params;
+    const answer = await models.AnswersFib.findAll({
+      where: { question_id },
+    });
+    if (!answer) return res.status(404).json({ message: "Answer not found" });
+    return res.status(200).json(answer);
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

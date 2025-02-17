@@ -42,7 +42,11 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "question_id",
       onDelete: "CASCADE",
     });
-    Question.hasMany(models.CorrectAnswer, {
+    Question.hasMany(models.AnswersMCQMSQ, {
+      foreignKey: "question_id",
+      onDelete: "CASCADE",
+    });
+    Question.hasOne(models.AnswersFib, {
       foreignKey: "question_id",
       onDelete: "CASCADE",
     });
