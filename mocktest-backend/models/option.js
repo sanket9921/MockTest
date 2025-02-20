@@ -25,10 +25,12 @@ module.exports = (sequelize, DataTypes) => {
     Option.belongsTo(models.Question, {
       foreignKey: "question_id",
       onDelete: "CASCADE",
+      as: "question",
     });
     Option.hasOne(models.AnswersMCQMSQ, {
       foreignKey: "option_id",
       onDelete: "CASCADE",
+      as: "correct_answer",
     });
   };
 

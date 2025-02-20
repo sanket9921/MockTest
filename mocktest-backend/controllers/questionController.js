@@ -1,5 +1,10 @@
 const { models } = require("../models"); // Import models
-const { uploadImageToCloudinary } = require("../services/imageService");
+const cloudinary = require("../config/cloudinary");
+
+const {
+  uploadImageToCloudinary,
+  extractCloudinaryId,
+} = require("../services/imageService");
 const { addQuestionService } = require("../services/questionService");
 const { executeTransaction } = require("../utils/dbTransaction");
 // Create a new Question
@@ -45,20 +50,35 @@ exports.getQuestionById = async (req, res) => {
 exports.updateQuestion = async (req, res) => {
   try {
     const { id } = req.params;
-    const { content, content_type, type, test_id } = req.body;
+
+    const { content, content_type, marks } = req.body;
+    // const file = req.file;
 
     const question = await models.Question.findByPk(id);
     if (!question)
       return res.status(404).json({ message: "Question not found" });
 
-    question.content = content;
+    if (content_type === "image" && req.files && req.files.questionImage) {
+      const publicId = extractCloudinaryId(question.content);
+      if (publicId) {
+        await cloudinary.uploader.destroy(`mock-test/questions/${publicId}`);
+      }
+      const content_url = await uploadImageToCloudinary(
+        req.files.questionImage[0].path,
+        "mock-test/questions"
+      );
+      console.log(content_url);
+      question.content = content_url;
+    } else {
+      question.content = content;
+    }
     question.content_type = content_type;
-    question.type = type;
-    question.test_id = test_id;
+    question.marks = marks;
 
     await question.save();
     return res.status(200).json(question);
   } catch (error) {
+    console.log({ error: error.message });
     return res.status(500).json({ error: error.message });
   }
 };
@@ -67,13 +87,39 @@ exports.updateQuestion = async (req, res) => {
 exports.deleteQuestion = async (req, res) => {
   try {
     const { id } = req.params;
-    const question = await models.Question.findByPk(id);
+    const question = await models.Question.findByPk(id, {
+      include: [
+        {
+          model: models.Option,
+          as: "options",
+        },
+      ],
+    });
+
     if (!question)
       return res.status(404).json({ message: "Question not found" });
+    // Delete Question Image from Cloudinary (if exists)
+    if (question.content_type === "image" && question.content) {
+      const publicId = extractCloudinaryId(question.content);
+      if (publicId) {
+        await cloudinary.uploader.destroy(`mock-test/questions/${publicId}`);
+      }
+    }
+
+    // Delete Related Options' Images from Cloudinary
+    for (const option of question.options) {
+      if (option.content_type === "image" && option.content) {
+        const publicId = extractCloudinaryId(option.content);
+        if (publicId) {
+          await cloudinary.uploader.destroy(`mock-test/options/${publicId}`);
+        }
+      }
+    }
 
     await question.destroy();
     return res.status(200).json({ message: "Question deleted successfully" });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: error.message });
   }
 };
@@ -187,5 +233,41 @@ exports.addQuestion2 = async (req, res) => {
   } catch (error) {
     console.error("Error adding question:", error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.getQuestionByTestId = async (req, res) => {
+  try {
+    const { testId } = req.params;
+
+    const questions = await models.Question.findAll({
+      where: { test_id: testId },
+      order: [["id", "ASC"]],
+      include: [
+        {
+          model: models.Option,
+          separate: true, // ✅ Forces Sequelize to fetch options separately and apply ordering
+          as: "options", // ✅ Match the alias in the association
+          order: [["id", "ASC"]],
+          include: [
+            {
+              model: models.AnswersMCQMSQ,
+              as: "correct_answer", // ✅ Match the alias in the association
+              attributes: ["option_id"],
+            },
+          ],
+        },
+        {
+          model: models.AnswersFib,
+          as: "fib_answer", // ✅ Match the alias in the association
+          attributes: ["correctTextAnswer"],
+        },
+      ],
+    });
+
+    res.status(200).json({ success: true, data: questions });
+  } catch (error) {
+    console.error("Error fetching questions:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

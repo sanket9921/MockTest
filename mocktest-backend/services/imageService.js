@@ -21,4 +21,13 @@ const uploadImageToCloudinary = async (filePath, folder) => {
   }
 };
 
-module.exports = { uploadImageToCloudinary };
+const extractCloudinaryId = (url) => {
+  if (!url) return null;
+
+  // Match the public ID for both questions and options
+  const match = url.match(/mock-test\/(questions|options)\/(.+?)\./);
+
+  return match ? match[2] : null;
+};
+
+module.exports = { uploadImageToCloudinary, extractCloudinaryId };

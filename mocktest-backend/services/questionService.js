@@ -41,35 +41,67 @@ exports.addQuestionService = async (data, files, transaction) => {
   );
 
   let createdOptions = [];
+  let imageIndex = 0; // To track images in the `optionImages` array
 
   // Store Options if not FILL_IN_THE_BLANK
   if (question_type !== "fill_in_the_blank") {
-    const optionInstances = await Promise.all(
-      options.map(async (option, index) => {
-        let optionContent = option.content;
+    const optionInstances = [];
 
-        // Upload option image if applicable
-        if (option.content_type === "image" && files?.optionImages?.[index]) {
-          optionContent = await uploadImageToCloudinary(
-            files.optionImages[index].path,
+    for (let index = 0; index < options.length; index++) {
+      let option = options[index];
+      let optionContent = option.content;
+
+      // If the option content is empty and it's supposed to be an image
+      if (!optionContent && option.content_type === "image") {
+        optionContent = "Image to be uploaded"; // Placeholder if no image URL yet
+      }
+
+      // Check if the option is an image and if we have an image to upload
+      if (
+        option.content_type === "image" &&
+        files?.optionImages?.[imageIndex]
+      ) {
+        console.log(
+          `Uploading image for option ${index}: ${files.optionImages[imageIndex].path}`
+        );
+
+        try {
+          // Upload the image to Cloudinary and get the URL
+          const imageUrl = await uploadImageToCloudinary(
+            files.optionImages[imageIndex].path,
             "mock-test/options"
           );
-        }
 
-        return models.Option.create(
+          // Replace the content with the Cloudinary URL
+          optionContent = imageUrl;
+          console.log(
+            `Option ${index} image uploaded successfully: ${imageUrl}`
+          );
+
+          // Increment image index only if the option is an image
+          imageIndex++;
+        } catch (error) {
+          console.error(`Error uploading image for option ${index}:`, error);
+          optionContent = "Image upload failed"; // Fallback if image upload fails
+        }
+      }
+
+      // Add the option creation promise to the array
+      optionInstances.push(
+        models.Option.create(
           {
             question_id: newQuestion.id,
             content: optionContent,
             content_type: option.content_type,
           },
           { transaction }
-        );
-      })
-    );
+        )
+      );
+    }
 
+    // Wait for all options to be created and maintain order
     createdOptions = await Promise.all(optionInstances);
   }
-
   // Store Correct Answers
   if (question_type === "fill_in_the_blank") {
     await models.AnswersFib.create(
