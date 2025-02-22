@@ -15,7 +15,7 @@ router.get(
 router.get("/:id", correctAnswerController.getCorrectAnswerById);
 
 // Route to update a correct answer
-router.put("/:id", correctAnswerController.updateCorrectAnswer);
+router.put("/:questionId", correctAnswerController.updateCorrectAnswer);
 
 // Route to delete a correct answer
 router.delete("/:id", correctAnswerController.deleteCorrectAnswer);

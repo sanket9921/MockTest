@@ -1,4 +1,9 @@
 const { models } = require("../models"); // Import models
+const {
+  extractCloudinaryId,
+  uploadImageToCloudinary,
+} = require("../services/imageService");
+const cloudinary = require("../config/cloudinary");
 
 // Create a new Option
 exports.createOption = async (req, res) => {
@@ -44,14 +49,27 @@ exports.getOptionById = async (req, res) => {
 exports.updateOption = async (req, res) => {
   try {
     const { id } = req.params;
-    const { content, content_type, question_id } = req.body;
+    const { content, content_type } = req.body;
 
     const option = await models.Option.findByPk(id);
     if (!option) return res.status(404).json({ message: "Option not found" });
 
-    option.content = content;
+    let newContent = content;
+    if (content_type == "image" && req.file) {
+      const publicId = extractCloudinaryId(option.content);
+      if (publicId) {
+        await cloudinary.uploader.destroy(`mock-test/options/${publicId}`);
+      }
+      const content_url = await uploadImageToCloudinary(
+        req.file.path,
+        "mock-test/options"
+      );
+      console.log(content_url);
+      option.content = content_url;
+    } else {
+      option.content = content;
+    }
     option.content_type = content_type;
-    option.question_id = question_id;
 
     await option.save();
     return res.status(200).json(option);
@@ -64,12 +82,19 @@ exports.updateOption = async (req, res) => {
 exports.deleteOption = async (req, res) => {
   try {
     const { id } = req.params;
+
     const option = await models.Option.findByPk(id);
     if (!option) return res.status(404).json({ message: "Option not found" });
-
+    if (option.content_type === "image" && option.content) {
+      const publicId = extractCloudinaryId(option.content);
+      if (publicId) {
+        await cloudinary.uploader.destroy(`mock-test/options/${publicId}`);
+      }
+    }
     await option.destroy();
     return res.status(200).json({ message: "Option deleted successfully" });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: error.message });
   }
 };

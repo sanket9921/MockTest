@@ -154,6 +154,7 @@ const MCQForm = ({
             correctAnswers={correctAnswers} // ✅ Now passing an array
             setCorrectAnswers={setCorrectAnswers} // ✅ Pass the setter function
             type="checkbox" // ✅ MSQ uses checkboxes for multiple correct answers
+            selectedQuestion={selectedQuestion}
           />
           {errors[`option${index}`] && (
             <p className="text-red-500">{errors[`option${index}`]}</p>

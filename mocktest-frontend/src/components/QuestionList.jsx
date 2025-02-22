@@ -4,7 +4,12 @@ import {
   fetchQuestionsByTestId,
 } from "../services/questionService";
 
-const QuestionList = ({ questions, setSelectedQuestion, refreshQuestions }) => {
+const QuestionList = ({
+  questions,
+  selectedQuestion,
+  setSelectedQuestion,
+  refreshQuestions,
+}) => {
   // const [questions, setQuestions] = useState([]);
   const [expandedQuestion, setExpandedQuestion] = useState(null);
   // console.log(questions);
@@ -20,6 +25,7 @@ const QuestionList = ({ questions, setSelectedQuestion, refreshQuestions }) => {
   const handleDelete = async (questionId) => {
     if (window.confirm("Are you sure you want to delete this question?")) {
       try {
+        if (questionId === selectedQuestion?.id) setSelectedQuestion(null);
         await deleteQuestion(questionId);
         refreshQuestions();
       } catch (error) {
@@ -64,7 +70,10 @@ const QuestionList = ({ questions, setSelectedQuestion, refreshQuestions }) => {
               <div className="flex space-x-2">
                 <button
                   className="text-blue-500 hover:text-blue-700"
-                  onClick={() => setSelectedQuestion(question)}
+                  onClick={() => {
+                    setSelectedQuestion(null);
+                    setSelectedQuestion(question);
+                  }}
                 >
                   ✏️
                 </button>

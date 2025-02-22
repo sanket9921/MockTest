@@ -253,14 +253,14 @@ exports.getQuestionByTestId = async (req, res) => {
             {
               model: models.AnswersMCQMSQ,
               as: "correct_answer", // ✅ Match the alias in the association
-              attributes: ["option_id"],
+              // attributes: ["option_id"],
             },
           ],
         },
         {
           model: models.AnswersFib,
           as: "fib_answer", // ✅ Match the alias in the association
-          attributes: ["correctTextAnswer"],
+          // attributes: ["correctTextAnswer"],
         },
       ],
     });

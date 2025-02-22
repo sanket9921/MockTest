@@ -24,6 +24,7 @@ const AddQuestion = () => {
     <div className="container flex">
       <QuestionList
         questions={questions}
+        selectedQuestion={selectedQuestion}
         setSelectedQuestion={setSelectedQuestion}
         refreshQuestions={refreshQuestions}
       />

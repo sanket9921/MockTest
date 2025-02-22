@@ -44,22 +44,33 @@ exports.getCorrectAnswerById = async (req, res) => {
 
 // Update a CorrectAnswer
 exports.updateCorrectAnswer = async (req, res) => {
+  const { questionId } = req.params;
+  const { correct_answers } = req.body; // Array of option IDs
+
   try {
-    const { id } = req.params;
-    const { option_id, correct_text_answer, question_id } = req.body;
+    // Remove all previous correct answers for this question
+    await models.AnswersMCQMSQ.destroy({
+      where: { question_id: questionId },
+    });
 
-    const correctAnswer = await models.CorrectAnswer.findByPk(id);
-    if (!correctAnswer)
-      return res.status(404).json({ message: "Answer not found" });
+    console.log(correct_answers);
+    // Insert new correct answers
+    if (correct_answers.length > 0) {
+      const newCorrectAnswers = correct_answers.map((optionId) => ({
+        question_id: questionId,
+        option_id: optionId,
+      }));
 
-    correctAnswer.option_id = option_id;
-    correctAnswer.correct_text_answer = correct_text_answer;
-    correctAnswer.question_id = question_id;
+      await models.AnswersMCQMSQ.bulkCreate(newCorrectAnswers);
+    }
 
-    await correctAnswer.save();
-    return res.status(200).json(correctAnswer);
+    res.status(200).json({
+      success: true,
+      message: "Correct answers updated successfully",
+    });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    console.error("Error updating correct answers:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
