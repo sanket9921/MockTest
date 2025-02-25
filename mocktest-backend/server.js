@@ -9,6 +9,8 @@ const testRoutes = require("./routes/testRoutes");
 const questionRoutes = require("./routes/questionRoutes");
 const optionRoutes = require("./routes/optionsRoutes");
 const correctAnswerRoutes = require("./routes/correctAnswerRoutes");
+const testAttemptRoutes = require("./routes/testAttemptRoutes");
+
 // require("dotenv").config();
 
 const app = express();
@@ -28,6 +30,7 @@ app.use("/api/tests", testRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/options", optionRoutes);
 app.use("/api/answer", correctAnswerRoutes);
+app.use("/api", testAttemptRoutes);
 
 // Sync Database
 sequelize

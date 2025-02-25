@@ -8,6 +8,8 @@ const models = {
   Option: require("./option")(sequelize, DataTypes),
   AnswersMCQMSQ: require("./answersMCQMSQ")(sequelize, DataTypes),
   AnswersFib: require("./answersFib")(sequelize, DataTypes),
+  TestAttempt: require("./TestAttempt")(sequelize, DataTypes),
+  UserAnswer: require("./UserAnswer")(sequelize, DataTypes),
 };
 
 Object.keys(models).forEach((model) => {

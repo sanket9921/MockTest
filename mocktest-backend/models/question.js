@@ -1,3 +1,5 @@
+const { updateTotalMarks } = require("../services/testService");
+
 module.exports = (sequelize, DataTypes) => {
   const Question = sequelize.define(
     "Question",
@@ -54,6 +56,26 @@ module.exports = (sequelize, DataTypes) => {
       as: "fib_answer",
     });
   };
+  // ✅ Use `question.sequelize.models` to access models dynamically
+  Question.afterCreate(async (question, options) => {
+    setTimeout(async () => {
+      const models = question.sequelize.models;
+      await updateTotalMarks(models, question.test_id);
+    }, 100);
+  });
 
+  Question.afterUpdate(async (question, options) => {
+    setTimeout(async () => {
+      const models = question.sequelize.models;
+      await updateTotalMarks(models, question.test_id);
+    }, 100);
+  });
+
+  Question.afterDestroy(async (question, options) => {
+    setTimeout(async () => {
+      const models = question.sequelize.models;
+      await updateTotalMarks(models, question.test_id);
+    }, 100);
+  });
   return Question;
 };

@@ -1,5 +1,6 @@
 const { models } = require("../models");
 const { uploadImageToCloudinary } = require("./imageService");
+const { updateTotalMarks } = require("./testService");
 
 // Function to add a new question
 exports.addQuestionService = async (data, files, transaction) => {
