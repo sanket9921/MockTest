@@ -29,6 +29,14 @@ module.exports = (sequelize, DataTypes) => {
         ),
         allowNull: false,
       },
+      passage_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true, // Null means it's a standalone question
+        references: {
+          model: "mock_test_passages",
+          key: "id",
+        },
+      },
     },
     {
       tableName: "mock_test_question",
@@ -40,6 +48,12 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "test_id",
       onDelete: "CASCADE",
     });
+    Question.belongsTo(models.Passage, {
+      foreignKey: "passage_id",
+      onDelete: "CASCADE",
+      as: "passageData",
+    });
+
     Question.hasMany(models.Option, {
       foreignKey: "question_id",
       onDelete: "CASCADE",

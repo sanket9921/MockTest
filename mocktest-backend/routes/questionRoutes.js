@@ -12,23 +12,26 @@ router.put(
   questionController.updateQuestion
 );
 router.delete("/:id", questionController.deleteQuestion);
+// router.post(
+//   "/addquestion",
+//   upload.fields([
+//     { name: "questionImage", maxCount: 1 },
+//     { name: "optionImages", maxCount: 10 },
+//   ]),
+//   questionController.addQuestion
+// );
+router.post("/addquestion2", upload.any(), questionController.addQuestion2);
+
 router.post(
-  "/addquestion",
+  "/addPassageWithQuestions",
   upload.fields([
-    { name: "questionImage", maxCount: 1 },
-    { name: "optionImages", maxCount: 10 },
+    { name: "passageImage", maxCount: 1 },
+    { name: "questionImages", maxCount: 10 },
+    { name: "optionImages", maxCount: 20 },
   ]),
-  questionController.addQuestion
-);
-router.post(
-  "/addquestion2",
-  upload.fields([
-    { name: "questionImage", maxCount: 1 },
-    { name: "optionImages", maxCount: 10 },
-  ]),
-  questionController.addQuestion2
+  questionController.addPassageWithQuestions
 );
 
-router.get("/testquestions/:testId", questionController.getQuestionByTestId);
+router.get("/testquestions/:testId", questionController.getQuestionsByTestId);
 
 module.exports = router;

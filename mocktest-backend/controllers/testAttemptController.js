@@ -271,16 +271,6 @@ exports.submitTest = async (req, res) => {
   res.json({ message: "Test submitted", finalScore: totalScore });
 };
 
-// Get test result
-exports.getResult = async (req, res) => {
-  const { attemptId } = req.params;
-  const attempt = await models.TestAttempt.findByPk(attemptId);
-
-  if (!attempt) return res.status(404).json({ message: "Attempt not found" });
-
-  res.json({ testId: attempt.test_id, finalScore: attempt.total_score });
-};
-
 exports.getTestAttemptStats = async (req, res) => {
   try {
     const { attemptId } = req.params;
@@ -317,3 +307,5 @@ exports.getTestAttemptStats = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+exports.getTestResult = async (attemptId) => {};

@@ -10,6 +10,7 @@ const models = {
   AnswersFib: require("./answersFib")(sequelize, DataTypes),
   TestAttempt: require("./TestAttempt")(sequelize, DataTypes),
   UserAnswer: require("./UserAnswer")(sequelize, DataTypes),
+  Passage: require("./passage")(sequelize, DataTypes),
 };
 
 Object.keys(models).forEach((model) => {

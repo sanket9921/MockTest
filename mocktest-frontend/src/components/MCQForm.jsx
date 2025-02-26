@@ -115,7 +115,7 @@ const MCQForm = ({
       } else if (option.content_type === "image" && option.file) {
         formData.append(`options[${index}][content]`, "");
         formData.append(`options[${index}][content_type]`, "image");
-        formData.append("optionImages", option.file);
+        formData.append(`optionImages[${index}]`, option.file);
       }
     });
 

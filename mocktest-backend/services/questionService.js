@@ -6,6 +6,7 @@ const { updateTotalMarks } = require("./testService");
 exports.addQuestionService = async (data, files, transaction) => {
   let {
     test_id,
+    passage_id,
     content,
     content_type,
     question_type,
@@ -14,6 +15,7 @@ exports.addQuestionService = async (data, files, transaction) => {
     correct_answers,
   } = data;
 
+  console.log(files);
   // Parse options if they are a string (from form-data)
   if (typeof options === "string") {
     options = JSON.parse(options);
@@ -33,6 +35,7 @@ exports.addQuestionService = async (data, files, transaction) => {
   const newQuestion = await models.Question.create(
     {
       test_id,
+      passage_id: passage_id || null,
       content: questionContent,
       content_type,
       marks,
@@ -60,16 +63,18 @@ exports.addQuestionService = async (data, files, transaction) => {
       // Check if the option is an image and if we have an image to upload
       if (
         option.content_type === "image" &&
-        files?.optionImages?.[imageIndex]
+        files[`optionImages[${index}]`]?.[0]
       ) {
         console.log(
-          `Uploading image for option ${index}: ${files.optionImages[imageIndex].path}`
+          `Uploading image for option ${index}: ${
+            files[`optionImages[${index}]`]?.[0].path
+          }`
         );
 
         try {
           // Upload the image to Cloudinary and get the URL
           const imageUrl = await uploadImageToCloudinary(
-            files.optionImages[imageIndex].path,
+            files[`optionImages[${index}]`]?.[0].path,
             "mock-test/options"
           );
 

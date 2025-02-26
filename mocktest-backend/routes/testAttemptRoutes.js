@@ -18,6 +18,6 @@ router.get(
 
 router.post("/attempts/:attemptId/answer", testAttemptController.saveAnswer);
 router.post("/attempts/:attemptId/submit", testAttemptController.submitTest);
-router.get("/attempts/:attemptId/result", testAttemptController.getResult);
+router.get("/attempts/:attemptId/result", testAttemptController.getTestResult);
 
 module.exports = router;

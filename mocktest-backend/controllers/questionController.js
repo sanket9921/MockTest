@@ -1,5 +1,6 @@
 const { models } = require("../models"); // Import models
 const cloudinary = require("../config/cloudinary");
+const { sequelize } = require("../models");
 
 const {
   uploadImageToCloudinary,
@@ -124,107 +125,115 @@ exports.deleteQuestion = async (req, res) => {
   }
 };
 
-exports.addQuestion = async (req, res) => {
-  try {
-    const {
-      test_id,
-      content,
-      content_type,
-      question_type,
-      marks,
-      options = [],
-      correct_answers,
-    } = req.body;
-    let questionContent = content;
+// exports.addQuestion = async (req, res) => {
+//   try {
+//     const {
+//       test_id,
+//       content,
+//       content_type,
+//       question_type,
+//       marks,
+//       options = [],
+//       correct_answers,
+//     } = req.body;
+//     let questionContent = content;
 
-    // Upload Question Image if applicable
-    if (content_type === "image" && req.files && req.files.questionImage) {
-      questionContent = await uploadImageToCloudinary(
-        req.files.questionImage[0].path,
-        "mock-test/questions"
-      );
-    }
+//     // Upload Question Image if applicable
+//     if (content_type === "image" && req.files && req.files.questionImage) {
+//       questionContent = await uploadImageToCloudinary(
+//         req.files.questionImage[0].path,
+//         "mock-test/questions"
+//       );
+//     }
 
-    const newQuestion = await models.Question.create({
-      test_id,
-      content: questionContent,
-      content_type,
-      marks,
-      type: question_type,
-    });
+//     const newQuestion = await models.Question.create({
+//       test_id,
+//       content: questionContent,
+//       content_type,
+//       marks,
+//       type: question_type,
+//     });
 
-    let createdOptions = [];
-    console.log("Received options:", options);
-    console.log("Type of options:", typeof options);
-    const parsedOptions =
-      typeof options === "string" ? JSON.parse(options) : options;
+//     let createdOptions = [];
+//     console.log("Received options:", options);
+//     console.log("Type of options:", typeof options);
+//     const parsedOptions =
+//       typeof options === "string" ? JSON.parse(options) : options;
 
-    // Step 2: Add Options (For MCQ/MSQ)
-    if (Array.isArray(parsedOptions) && question_type !== "fill_in_the_blank") {
-      createdOptions = await Promise.all(
-        parsedOptions.map(async (option) => {
-          let optionContent = option.content;
+//     // Step 2: Add Options (For MCQ/MSQ)
+//     if (Array.isArray(parsedOptions) && question_type !== "fill_in_the_blank") {
+//       createdOptions = await Promise.all(
+//         parsedOptions.map(async (option) => {
+//           let optionContent = option.content;
 
-          // Upload option image if applicable
-          if (
-            option.content_type === "image" &&
-            req.files &&
-            req.files.optionImages &&
-            req.files.optionImages[index]
-          ) {
-            optionContent = await uploadImageToCloudinary(
-              req.files.optionImages[index].path,
-              "mock-test/options"
-            );
-          }
+//           // Upload option image if applicable
+//           if (
+//             option.content_type === "image" &&
+//             req.files &&
+//             req.files.optionImages &&
+//             req.files.optionImages[index]
+//           ) {
+//             optionContent = await uploadImageToCloudinary(
+//               req.files.optionImages[index].path,
+//               "mock-test/options"
+//             );
+//           }
 
-          const newOption = await models.Option.create({
-            question_id: newQuestion.id,
-            content: optionContent,
-            content_type: option.content_type, // "text" or "image"
-          });
-          return newOption; // Store created options
-        })
-      );
-    }
+//           const newOption = await models.Option.create({
+//             question_id: newQuestion.id,
+//             content: optionContent,
+//             content_type: option.content_type, // "text" or "image"
+//           });
+//           return newOption; // Store created options
+//         })
+//       );
+//     }
 
-    if (question_type === "fill_in_the_blank") {
-      // Store the correct text answer for fill-in-the-blank
-      await models.AnswersFib.create({
-        question_id: newQuestion.id,
-        correctTextAnswer: correct_answers, // Store correct text answer
-      });
-    } else {
-      // Map correct_answers (indexes) to correct option IDs
-      const optionIdMap = createdOptions.map((opt) => opt.id); // Extract generated option IDs
-      const answer =
-        typeof correct_answers === "string"
-          ? JSON.parse(correct_answers)
-          : correct_answers;
+//     if (question_type === "fill_in_the_blank") {
+//       // Store the correct text answer for fill-in-the-blank
+//       await models.AnswersFib.create({
+//         question_id: newQuestion.id,
+//         correctTextAnswer: correct_answers, // Store correct text answer
+//       });
+//     } else {
+//       // Map correct_answers (indexes) to correct option IDs
+//       const optionIdMap = createdOptions.map((opt) => opt.id); // Extract generated option IDs
+//       const answer =
+//         typeof correct_answers === "string"
+//           ? JSON.parse(correct_answers)
+//           : correct_answers;
 
-      await Promise.all(
-        answer.map(async (correctIndex) => {
-          await models.AnswersMCQMSQ.create({
-            question_id: newQuestion.id,
-            option_id: optionIdMap[correctIndex], // Store each correct answer
-          });
-        })
-      );
-    }
+//       await Promise.all(
+//         answer.map(async (correctIndex) => {
+//           await models.AnswersMCQMSQ.create({
+//             question_id: newQuestion.id,
+//             option_id: optionIdMap[correctIndex], // Store each correct answer
+//           });
+//         })
+//       );
+//     }
 
-    return res
-      .status(201)
-      .json({ message: "Question added successfully!", question: newQuestion });
-  } catch (error) {
-    console.error("Error adding question:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
+//     return res
+//       .status(201)
+//       .json({ message: "Question added successfully!", question: newQuestion });
+//   } catch (error) {
+//     console.error("Error adding question:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
 
 exports.addQuestion2 = async (req, res) => {
   try {
+    const files = {};
+
+    req.files.forEach((file) => {
+      if (!files[file.fieldname]) {
+        files[file.fieldname] = [];
+      }
+      files[file.fieldname].push(file);
+    });
     const question = await executeTransaction(async (transaction) => {
-      return await addQuestionService(req.body, req.files, transaction);
+      return await addQuestionService(req.body, files, transaction);
     });
 
     return res
@@ -236,38 +245,132 @@ exports.addQuestion2 = async (req, res) => {
   }
 };
 
-exports.getQuestionByTestId = async (req, res) => {
+exports.getQuestionsByTestId = async (req, res) => {
   try {
     const { testId } = req.params;
 
+    // Fetch all questions in insertion order
     const questions = await models.Question.findAll({
       where: { test_id: testId },
       order: [["id", "ASC"]],
       include: [
         {
+          model: models.Passage,
+          as: "passageData",
+          attributes: ["id", "content", "content_type"],
+        },
+        {
           model: models.Option,
-          separate: true, // ✅ Forces Sequelize to fetch options separately and apply ordering
-          as: "options", // ✅ Match the alias in the association
+          as: "options",
+          separate: true,
           order: [["id", "ASC"]],
           include: [
             {
               model: models.AnswersMCQMSQ,
-              as: "correct_answer", // ✅ Match the alias in the association
-              // attributes: ["option_id"],
+              as: "correct_answer",
             },
           ],
         },
         {
           model: models.AnswersFib,
-          as: "fib_answer", // ✅ Match the alias in the association
-          // attributes: ["correctTextAnswer"],
+          as: "fib_answer",
         },
       ],
     });
 
-    res.status(200).json({ success: true, data: questions });
+    const structuredQuestions = [];
+    const passageMap = new Map();
+
+    questions.forEach((question) => {
+      const questionData = question.toJSON();
+
+      if (questionData.passage_id) {
+        // Passage-based question: group under its passage
+        if (!passageMap.has(questionData.passage_id)) {
+          passageMap.set(questionData.passage_id, {
+            passage_id: questionData.passageData.id,
+            content: questionData.passageData.content,
+            content_type: questionData.passageData.content_type,
+            questions: [],
+          });
+          structuredQuestions.push(passageMap.get(questionData.passage_id));
+        }
+        passageMap.get(questionData.passage_id).questions.push(questionData);
+      } else {
+        // Standalone question: push directly
+        structuredQuestions.push(questionData);
+      }
+    });
+
+    res.status(200).json({ success: true, data: structuredQuestions });
   } catch (error) {
     console.error("Error fetching questions:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.addPassageWithQuestions = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    let { test_id, passage_content, passage_content_type, questions } =
+      req.body;
+
+    if (!questions || !Array.isArray(questions) || questions.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "At least one question is required" });
+    }
+
+    let passageContent = passage_content;
+
+    //  Upload Passage Image if applicable
+    if (passage_content_type === "image" && req.files?.passageImage) {
+      passageContent = await uploadImageToCloudinary(
+        req.files.passageImage[0].path,
+        "mock-test/passages"
+      );
+    }
+
+    // Store Passage
+    const newPassage = await models.Passage.create(
+      {
+        test_id,
+        content: passageContent,
+        content_type: passage_content_type,
+      },
+      { transaction }
+    );
+
+    let createdQuestions = [];
+
+    // Loop through questions and use `addQuestionService`
+    for (const questionData of questions) {
+      //  Ensure passage_id is set correctly
+      const questionPayload = {
+        ...questionData,
+        test_id, // Ensure test_id is passed
+        passage_id: newPassage.id, //  Link question to passage
+      };
+
+      const newQuestion = await addQuestionService(
+        questionPayload,
+        req.files,
+        transaction
+      );
+      createdQuestions.push(newQuestion);
+    }
+
+    await transaction.commit();
+    return res.status(201).json({
+      message: "Passage and questions added successfully",
+      passage: newPassage,
+      questions: createdQuestions,
+    });
+  } catch (error) {
+    await transaction.rollback();
+    console.error("Error adding passage with questions:", error);
+    return res
+      .status(500)
+      .json({ message: "Failed to add passage with questions", error });
   }
 };
