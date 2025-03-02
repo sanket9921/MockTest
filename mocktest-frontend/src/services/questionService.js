@@ -20,3 +20,9 @@ export const deleteQuestion = async (questionId) => {
   const response = await API.delete("/questions/" + questionId);
   return response.data;
 };
+
+export const submitPassageWithQuestions = async (formData) => {
+  return await API.post("/questions/addPassageWithQuestions", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+};

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { submitQuestion } from "../services/questionService";
-import QuestionInput from "./common/QuestionInput";
+import QuestionInput from "./QuestionInput";
+import { submitQuestion } from "../../services/questionService";
 
 const FillBlankForm = ({
   testId,

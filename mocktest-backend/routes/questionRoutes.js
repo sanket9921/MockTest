@@ -8,7 +8,7 @@ router.get("/", questionController.getAllQuestions);
 router.get("/:id", questionController.getQuestionById);
 router.put(
   "/:id",
-  upload.fields([{ name: "questionImage", maxCount: 1 }]),
+  upload.fields([{ name: "file", maxCount: 1 }]),
   questionController.updateQuestion
 );
 router.delete("/:id", questionController.deleteQuestion);

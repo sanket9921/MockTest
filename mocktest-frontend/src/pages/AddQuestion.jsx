@@ -1,8 +1,8 @@
 import { useParams } from "react-router-dom";
-import QuestionForm from "../components/QuestionForm";
 import QuestionList from "../components/QuestionList";
 import { useEffect, useState } from "react";
 import { fetchQuestionsByTestId } from "../services/questionService";
+import QuestionManager from "../components/Forms/QuestionManager";
 
 const AddQuestion = () => {
   const { testid } = useParams();
@@ -28,7 +28,7 @@ const AddQuestion = () => {
         setSelectedQuestion={setSelectedQuestion}
         refreshQuestions={refreshQuestions}
       />
-      <QuestionForm
+      <QuestionManager
         testId={parseInt(testid)}
         selectedQuestion={selectedQuestion}
         setSelectedQuestion={setSelectedQuestion}

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import TabNavigation from "./TabNavigation";
-import MCQForm from "./MCQForm";
-import MSQForm from "./MSQForm";
+import MCQForm from "./MCQMSQ/MCQForm";
+import MSQForm from "./MCQMSQ/MSQForm";
 import FillBlankForm from "./FillBlankForm";
-import PassageForm from "./PassageForm";
+import PassageForm from "./Passage/PassageForm";
+import TabNavigation from "./TabNavigation";
 
-const QuestionForm = ({
+const QuestionManager = ({
   testId,
   selectedQuestion,
   setSelectedQuestion,
@@ -64,4 +64,4 @@ const QuestionForm = ({
   );
 };
 
-export default QuestionForm;
+export default QuestionManager;

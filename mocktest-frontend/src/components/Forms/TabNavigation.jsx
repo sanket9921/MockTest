@@ -3,6 +3,7 @@ const TabNavigation = ({ activeTab, setActiveTab }) => {
     { id: "mcq", label: "MCQ" },
     { id: "msq", label: "MSQ" },
     { id: "fill", label: "Fill in the Blank" },
+    { id: "passage", label: "Passage" },
   ];
 
   return (

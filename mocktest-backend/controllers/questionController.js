@@ -59,13 +59,13 @@ exports.updateQuestion = async (req, res) => {
     if (!question)
       return res.status(404).json({ message: "Question not found" });
 
-    if (content_type === "image" && req.files && req.files.questionImage) {
+    if (content_type === "image" && req.files && req.files.file) {
       const publicId = extractCloudinaryId(question.content);
       if (publicId) {
         await cloudinary.uploader.destroy(`mock-test/questions/${publicId}`);
       }
       const content_url = await uploadImageToCloudinary(
-        req.files.questionImage[0].path,
+        req.files.file[0].path,
         "mock-test/questions"
       );
       console.log(content_url);

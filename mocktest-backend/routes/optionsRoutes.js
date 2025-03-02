@@ -4,7 +4,7 @@ const optionController = require("../controllers/optionController");
 const upload = require("../middlewares/upload");
 
 // Route to create a new option
-router.post("/", optionController.createOption);
+router.post("/", upload.single("file"), optionController.createOption);
 
 // Route to get all options for a specific question
 router.get("/question/:question_id", optionController.getOptionsByQuestionId);

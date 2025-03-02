@@ -7,6 +7,7 @@ const MenuDropdown = ({ type, onAction }) => {
     question: [
       { label: "Add Option", action: "addOption" },
       { label: "Update Question", action: "updateQuestion" },
+      { label: "Update Answers", action: "updateAnswers" },
       { label: "Delete Question", action: "deleteQuestion", danger: true },
     ],
     option: [

@@ -1,50 +1,17 @@
 import { useEffect, useState } from "react";
-import OptionInput from "./Forms/OptionInput";
-import { submitQuestion } from "../services/questionService";
-import QuestionInput from "./common/QuestionInput";
+import QuestionInput from "../QuestionInput";
+import OptionInput from "./OptionInput";
 
-const MCQForm = ({
-  testId,
-  selectedQuestion,
-  setSelectedQuestion,
-  refreshQuestions,
+const QuestionForm = ({
+  type,
+  question,
+  setQuestion,
+  options,
+  setOptions,
+  correctAnswers,
+  setCorrectAnswers,
 }) => {
-  const defaultQuestion = {
-    content: "",
-    content_type: "text",
-    marks: 1,
-    file: null,
-  };
-
-  const defaultOptions = [
-    { content: "", content_type: "text", file: null },
-    { content: "", content_type: "text", file: null },
-  ];
-
-  const [question, setQuestion] = useState(defaultQuestion);
-  const [options, setOptions] = useState(defaultOptions);
-  const [correctAnswers, setCorrectAnswers] = useState([]);
-  const [errors, setErrors] = useState({}); // Error messages
-
-  useEffect(() => {
-    if (selectedQuestion) {
-      setQuestion({
-        content: selectedQuestion.content,
-        content_type: selectedQuestion.content_type,
-        marks: selectedQuestion.marks,
-        file: null,
-      });
-
-      setOptions(selectedQuestion.options || []);
-
-      // Extract correct answers from options
-      const correctOptionIds = selectedQuestion.options
-        ?.filter((opt) => opt.correct_answer !== null) // ✅ Find correct options
-        .map((opt) => opt.id); // ✅ Extract option IDs
-
-      setCorrectAnswers(correctOptionIds);
-    }
-  }, [selectedQuestion]);
+  const [errors, setErrors] = useState({});
 
   const validateForm = () => {
     let errors = {};
@@ -134,24 +101,9 @@ const MCQForm = ({
 
   return (
     <div className="space-y-4">
-      <QuestionInput
-        question={question}
-        setQuestion={setQuestion}
-        selectedQuestion={selectedQuestion}
-      />
+      <QuestionInput question={question} setQuestion={setQuestion} />
       {errors.question && <p className="text-red-500">{errors.question}</p>}
-
-      {/* <input
-        type="number"
-        placeholder="Marks"
-        className="w-full p-2 border rounded-md"
-        value={question.marks}
-        onChange={(e) =>
-          setQuestion({ ...question, marks: parseInt(e.target.value) })
-        }
-      /> */}
       {errors.marks && <p className="text-red-500">{errors.marks}</p>}
-
       {options.map((option, index) => (
         <div key={index}>
           <OptionInput
@@ -161,8 +113,7 @@ const MCQForm = ({
             setOptions={setOptions}
             correctAnswers={correctAnswers} // ✅ Now passing an array
             setCorrectAnswers={setCorrectAnswers} // ✅ Pass the setter function
-            type="radio" // ✅ MSQ uses checkboxes for multiple correct answers
-            selectedQuestion={selectedQuestion}
+            type={type} // ✅ MSQ uses checkboxes for multiple correct answers
           />
           {errors[`option${index}`] && (
             <p className="text-red-500">{errors[`option${index}`]}</p>
@@ -184,23 +135,8 @@ const MCQForm = ({
       >
         Add Option
       </button>
-
-      <button
-        onClick={handleSubmit}
-        className="p-2 bg-blue-500 text-white rounded"
-      >
-        {selectedQuestion ? "Update" : "Submit"}
-      </button>
-      {selectedQuestion && (
-        <button
-          onClick={resetForm} // Cancel edit mode
-          className="p-2 bg-gray-500 text-white rounded"
-        >
-          Cancel
-        </button>
-      )}
     </div>
   );
 };
 
-export default MCQForm;
+export default QuestionForm;

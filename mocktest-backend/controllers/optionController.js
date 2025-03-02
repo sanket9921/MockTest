@@ -5,18 +5,39 @@ const {
 } = require("../services/imageService");
 const cloudinary = require("../config/cloudinary");
 
-// Create a new Option
 exports.createOption = async (req, res) => {
   try {
     const { content, content_type, question_id } = req.body;
+
+    if (!question_id) {
+      return res.status(400).json({ error: "Question ID is required." });
+    }
+
+    let contentUrl = content;
+
+    // If the option is an image, upload it to Cloudinary
+    if (content_type === "image") {
+      if (!req.file) {
+        return res.status(400).json({ error: "Image file is required." });
+      }
+
+      contentUrl = await uploadImageToCloudinary(
+        req.file.path,
+        "mock-test/options"
+      );
+    }
+
+    // Save the option to the database
     const newOption = await models.Option.create({
-      content,
+      content: contentUrl,
       content_type,
       question_id,
     });
+
     return res.status(201).json(newOption);
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    console.error("Error creating option:", error);
+    return res.status(500).json({ error: "Internal server error." });
   }
 };
 

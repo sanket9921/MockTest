@@ -14,7 +14,10 @@ const OptionItem = ({ option, onAction }) => {
           option.content
         )}
       </span>
-      <MenuDropdown type="option" onAction={onAction} />
+      <MenuDropdown
+        type="option"
+        onAction={(action) => onAction(action, option)}
+      />
     </div>
   );
 };
