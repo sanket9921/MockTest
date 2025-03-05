@@ -4,12 +4,13 @@ import QuestionCard from "../components/QuestionCard";
 import QuestionNavigation from "../components/QuestionNavigation";
 import { motion } from "framer-motion";
 import {
-  getPaginatedQuestion,
+  // getPaginatedQuestion,
   markQuestionForReview,
   saveUserAnswer,
   submitTest,
-} from "../services/testService.";
-import SubmitButton from "../components/SubmitButton";
+} from "../services/testAttemptService";
+// import SubmitButton from "../components/SubmitButton";
+import TestAttemptLayout from "../components/TestAttempt/TestAttemptLayout";
 
 const TestAttemptPage = () => {
   const { attemptId } = useParams();
@@ -20,23 +21,23 @@ const TestAttemptPage = () => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [markedForReview, setMarkedForReview] = useState(false);
 
-  useEffect(() => {
-    const page = parseInt(searchParams.get("page")) || 1;
-    setCurrentPage(page);
-    fetchQuestion(page);
-  }, [searchParams]);
+  // useEffect(() => {
+  //   const page = parseInt(searchParams.get("page")) || 1;
+  //   setCurrentPage(page);
+  //   fetchQuestion(page);
+  // }, [searchParams]);
 
-  const fetchQuestion = async (page) => {
-    try {
-      const response = await getPaginatedQuestion(attemptId, page);
-      setQuestion(response.question);
-      setTotalPages(response.totalPages);
-      setSelectedAnswer(response.selectedAnswer);
-      setMarkedForReview(response.markedForReview);
-    } catch (error) {
-      console.error("Error fetching question:", error);
-    }
-  };
+  // const fetchQuestion = async (page) => {
+  //   try {
+  //     const response = await getPaginatedQuestion(attemptId, page);
+  //     setQuestion(response.question);
+  //     setTotalPages(response.totalPages);
+  //     setSelectedAnswer(response.selectedAnswer);
+  //     setMarkedForReview(response.markedForReview);
+  //   } catch (error) {
+  //     console.error("Error fetching question:", error);
+  //   }
+  // };
 
   const handleAnswerChange = async (answer) => {
     console.log(answer);
@@ -51,6 +52,7 @@ const TestAttemptPage = () => {
   const handleSubmit = async () => {
     await submitTest(attemptId);
   };
+
   const handleMarkForReview = async (questionId) => {
     await markQuestionForReview(attemptId, questionId, !markedForReview);
     setMarkedForReview((prev) => !prev); // Update UI instantly
@@ -63,17 +65,19 @@ const TestAttemptPage = () => {
         Time Remaining: 20:30
       </div>
 
+      <TestAttemptLayout attemptId={attemptId} />
+
       {/* Question Card */}
-      {question && (
+      {/* {question && (
         <QuestionCard
           question={question}
           selectedAnswer={selectedAnswer}
           onAnswerChange={handleAnswerChange}
         />
-      )}
+      )} */}
 
       {/* Navigation */}
-      <div className="flex justify-between mt-4">
+      {/* <div className="flex justify-between mt-4">
         <button
           className={`px-4 py-2 rounded ${
             currentPage > 1
@@ -104,14 +108,14 @@ const TestAttemptPage = () => {
         ) : (
           <SubmitButton attemptId={attemptId} onSubmit={handleSubmit} />
         )}
-      </div>
+      </div> */}
 
       {/* Question Navigation */}
-      <QuestionNavigation
+      {/* <QuestionNavigation
         totalPages={totalPages}
         currentPage={currentPage}
         onNavigate={handleNavigation}
-      />
+      /> */}
     </motion.div>
   );
 };

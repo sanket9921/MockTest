@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { getTestAttemptStats } from "../services/testService.";
 import SubmitConfirmationModal from "./SubmitConfirmationModal";
+import { getTestAttemptStats } from "../../services/testAttemptService";
 
 const SubmitButton = ({ attemptId, onSubmit }) => {
   const [showModal, setShowModal] = useState(false);

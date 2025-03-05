@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { getTestDetails, startTestAttempt } from "../services/testService.";
+import { getTestDetails } from "../services/testService.";
+import { startTestAttempt } from "../services/testAttemptService";
 
 const RulePage = () => {
   const { testId } = useParams();

@@ -26,6 +26,7 @@ const PassageForm = ({ testId }) => {
           { content: "", contentType: "text", isCorrect: false },
           { content: "", contentType: "text", isCorrect: false },
         ],
+        explanation: "",
       },
     ]);
   };
@@ -50,6 +51,8 @@ const PassageForm = ({ testId }) => {
     questions.forEach((q, qIndex) => {
       formData.append(`questions[${qIndex}][content]`, q.content);
       formData.append(`questions[${qIndex}][content_type]`, q.contentType);
+      formData.append(`questions[${qIndex}][explanation]`, q.explanation);
+
       formData.append(
         `questions[${qIndex}][question_type]`,
         q.type === "MCQ" ? "single_choice" : "multiple_choice"

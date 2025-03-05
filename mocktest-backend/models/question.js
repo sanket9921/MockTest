@@ -37,6 +37,10 @@ module.exports = (sequelize, DataTypes) => {
           key: "id",
         },
       },
+      explanation: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
     },
     {
       tableName: "mock_test_question",

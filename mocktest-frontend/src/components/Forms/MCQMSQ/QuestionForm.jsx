@@ -13,6 +13,13 @@ const QuestionForm = ({
 }) => {
   const [errors, setErrors] = useState({});
 
+  const handleExplanationChange = (e) => {
+    setQuestion((prevQuestion) => ({
+      ...prevQuestion,
+      explanation: e.target.value,
+    }));
+  };
+
   const validateForm = () => {
     let errors = {};
 
@@ -52,53 +59,6 @@ const QuestionForm = ({
     return Object.keys(errors).length === 0;
   };
 
-  const resetForm = () => {
-    setQuestion(defaultQuestion);
-    setOptions(defaultOptions);
-    setCorrectAnswers([]);
-    setSelectedQuestion(null);
-  };
-
-  const handleSubmit = async () => {
-    if (!validateForm()) return;
-
-    const formData = new FormData();
-    formData.append("test_id", testId);
-    formData.append("question_type", "single_choice"); // ✅ Different from MCQ
-    formData.append("marks", question.marks);
-
-    if (question.content_type === "text") {
-      formData.append("content", question.content);
-      formData.append("content_type", "text");
-    } else if (question.content_type === "image" && question.file) {
-      formData.append("questionImage", question.file);
-      formData.append("content_type", "image");
-    }
-
-    options.forEach((option, index) => {
-      if (option.content_type === "text") {
-        formData.append(`options[${index}][content]`, option.content);
-        formData.append(`options[${index}][content_type]`, "text");
-      } else if (option.content_type === "image" && option.file) {
-        formData.append(`options[${index}][content]`, "");
-        formData.append(`options[${index}][content_type]`, "image");
-        formData.append(`optionImages[${index}]`, option.file);
-      }
-    });
-
-    formData.append("correct_answers", JSON.stringify(correctAnswers));
-
-    for (let pair of formData.entries()) {
-      console.log(pair[0], pair[1]);
-    }
-    if (selectedQuestion) {
-      console.log(formData);
-    } else await submitQuestion(formData);
-
-    resetForm();
-    refreshQuestions();
-  };
-
   return (
     <div className="space-y-4">
       <QuestionInput question={question} setQuestion={setQuestion} />
@@ -111,9 +71,9 @@ const QuestionForm = ({
             option={option}
             options={options}
             setOptions={setOptions}
-            correctAnswers={correctAnswers} // ✅ Now passing an array
-            setCorrectAnswers={setCorrectAnswers} // ✅ Pass the setter function
-            type={type} // ✅ MSQ uses checkboxes for multiple correct answers
+            correctAnswers={correctAnswers}
+            setCorrectAnswers={setCorrectAnswers}
+            type={type}
           />
           {errors[`option${index}`] && (
             <p className="text-red-500">{errors[`option${index}`]}</p>
@@ -135,6 +95,13 @@ const QuestionForm = ({
       >
         Add Option
       </button>
+      <textarea
+        className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        rows="4"
+        value={question.explanation}
+        onChange={handleExplanationChange}
+        placeholder="Enter  explanation..."
+      />
     </div>
   );
 };

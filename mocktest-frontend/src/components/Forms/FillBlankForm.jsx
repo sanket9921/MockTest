@@ -12,6 +12,7 @@ const FillBlankForm = ({
     content: "",
     content_type: "text",
     marks: 1,
+    explanation: "",
     file: null,
   };
 
@@ -61,8 +62,9 @@ const FillBlankForm = ({
 
     const formData = new FormData();
     formData.append("test_id", testId);
-    formData.append("question_type", "fill_in_the_blank"); // ✅ Different from MCQ
+    formData.append("question_type", "fill_in_the_blank");
     formData.append("marks", question.marks);
+    formData.append("explanation", question.explanation);
 
     if (question.content_type === "text") {
       formData.append("content", question.content);
@@ -71,26 +73,24 @@ const FillBlankForm = ({
       formData.append("questionImage", question.file);
       formData.append("content_type", "image");
     }
-    formData.append("correct_answers", JSON.stringify(correctAnswer)); // ✅ Now an array
+    formData.append("correct_answers", JSON.stringify(correctAnswer));
 
     await submitQuestion(formData);
     resetForm();
     refreshQuestions();
   };
 
+  const handleExplanationChange = (e) => {
+    setQuestion((prevQuestion) => ({
+      ...prevQuestion,
+      explanation: e.target.value,
+    }));
+  };
+
   return (
     <div className="space-y-4">
       <QuestionInput question={question} setQuestion={setQuestion} />
       {errors.question && <p className="text-red-500">{errors.question}</p>}
-
-      <input
-        type="number"
-        placeholder="Marks"
-        value={question.marks}
-        className="w-full p-2 border"
-        onChange={(e) => setQuestion({ ...question, marks: e.target.value })}
-      />
-      {errors.marks && <p className="text-red-500">{errors.marks}</p>}
 
       <input
         type="text"
@@ -103,6 +103,13 @@ const FillBlankForm = ({
         <p className="text-red-500">{errors.correctAnswer}</p>
       )}
 
+      <textarea
+        className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        rows="4"
+        value={question.explanation}
+        onChange={handleExplanationChange}
+        placeholder="Enter  explanation..."
+      />
       <button
         onClick={handleSubmit}
         className="p-2 bg-blue-500 text-white rounded"

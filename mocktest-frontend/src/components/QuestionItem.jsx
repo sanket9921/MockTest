@@ -32,9 +32,17 @@ const QuestionItem = ({ question, onAction }) => {
           </DisclosureButton>
 
           <DisclosurePanel className="p-3 bg-white">
-            {question.options.map((option, index) => (
-              <OptionItem key={index} option={option} onAction={onAction} />
-            ))}
+            {question.type === "fill_in_the_blank" ? (
+              <div className="p-2 border rounded flex justify-between items-center bg-green-200">
+                {question.fib_answer.correctTextAnswer}
+              </div>
+            ) : (
+              question.options.map((option, index) => (
+                <OptionItem key={index} option={option} onAction={onAction} />
+              ))
+            )}
+            <h3>Explanation:</h3>
+            {question.explanation}
           </DisclosurePanel>
         </>
       )}

@@ -7,6 +7,7 @@ const MSQForm = ({ testId }) => {
     content: "",
     content_type: "text",
     marks: 1,
+    explanation: "",
     file: null,
   };
 
@@ -24,6 +25,7 @@ const MSQForm = ({ testId }) => {
     formData.append("test_id", testId);
     formData.append("question_type", "multiple_choice");
     formData.append("marks", question.marks);
+    formData.append("explanation", question.explanation);
 
     if (question.content_type === "text") {
       formData.append("content", question.content);

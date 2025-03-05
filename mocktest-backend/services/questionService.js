@@ -10,6 +10,7 @@ exports.addQuestionService = async (data, files, transaction) => {
     content,
     content_type,
     question_type,
+    explanation,
     marks,
     options,
     correct_answers,
@@ -40,6 +41,7 @@ exports.addQuestionService = async (data, files, transaction) => {
       content_type,
       marks,
       type: question_type,
+      explanation,
     },
     { transaction }
   );

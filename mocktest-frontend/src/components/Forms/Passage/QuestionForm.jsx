@@ -49,7 +49,12 @@ const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
     const updatedOptions = question.options.filter((_, i) => i !== index);
     updateQuestion(question.id, { options: updatedOptions });
   };
-
+  const handleExplanationChange = (e) => {
+    setQuestion((prevQuestion) => ({
+      ...prevQuestion,
+      explanation: e.target.value,
+    }));
+  };
   return (
     <div className="p-4 bg-white shadow-md rounded mb-4">
       <button
@@ -106,6 +111,15 @@ const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
       >
         Add Option
       </button>
+      <textarea
+        className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        rows="4"
+        value={question.explanation}
+        onChange={(e) =>
+          updateQuestion(question.id, { explanation: e.target.value })
+        }
+        placeholder="Enter  explanation..."
+      />
       <button
         onClick={() => removeQuestion(question.id)}
         className="mt-2 px-4 py-2 bg-red-500 text-white rounded"

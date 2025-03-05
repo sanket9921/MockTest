@@ -4,18 +4,206 @@ exports.startTestAttempt = async (req, res) => {
   const { testId } = req.params;
   const userId = req.body.user_id;
 
-  const attempt = await models.TestAttempt.create({
-    user_id: userId,
-    test_id: testId,
-  });
-  res.json({ attemptId: attempt.id, message: "Test started" });
+  if (!testId || !userId) {
+    return res
+      .status(400)
+      .json({ message: "Test ID and User ID are required." });
+  }
+
+  try {
+    // Check if user already has an in-progress attempt
+    const existingAttempt = await models.TestAttempt.findOne({
+      where: { user_id: userId, test_id: testId, status: "in_progress" },
+    });
+
+    if (existingAttempt) {
+      return res.status(200).json({
+        attemptId: existingAttempt.id,
+        message: "Resuming existing test attempt.",
+      });
+    }
+
+    // Create a new test attempt
+    const attempt = await models.TestAttempt.create({
+      user_id: userId,
+      test_id: testId,
+    });
+
+    res.status(201).json({
+      attemptId: attempt.id,
+      message: "Test started successfully",
+    });
+  } catch (error) {
+    console.error("Error starting test:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.getTestAttemptQuestions = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+
+    // Fetch the test attempt
+    const testAttempt = await models.TestAttempt.findOne({
+      where: { id: attemptId },
+    });
+
+    if (!testAttempt) {
+      return res.status(404).json({ message: "Test attempt not found" });
+    }
+
+    // If the test is completed, redirect to results page
+    if (testAttempt.status === "completed") {
+      return res.json({ redirect: `/attempts/${attemptId}/result` });
+    }
+
+    // Fetch all questions in insertion order
+    const questions = await models.Question.findAll({
+      where: { test_id: testAttempt.test_id },
+      order: [["id", "ASC"]],
+      include: [
+        {
+          model: models.Passage,
+          as: "passageData",
+          attributes: ["id", "content", "content_type"],
+        },
+        {
+          model: models.Option,
+          as: "options",
+          separate: true,
+          order: [["id", "ASC"]],
+          attributes: ["id", "question_id", "content", "content_type"], // Exclude correct answers
+        },
+      ],
+    });
+
+    // Fetch user answers separately (since no direct relation exists)
+    const userAnswers = await models.UserAnswer.findAll({
+      where: { attempt_id: attemptId },
+      attributes: [
+        "question_id",
+        "option_id",
+        "fib_answer",
+        "marked_for_review",
+      ],
+    });
+
+    // Create a map of user answers for quick lookup
+    const userAnswerMap = new Map();
+
+    userAnswers.forEach((answer) => {
+      const { question_id, option_id, fib_answer, marked_for_review } = answer;
+
+      if (!userAnswerMap.has(question_id)) {
+        userAnswerMap.set(question_id, {
+          userAnswer: null,
+          markedForReview: false,
+        });
+      }
+
+      if (option_id !== null) {
+        const currentAnswer = userAnswerMap.get(question_id).userAnswer;
+
+        if (Array.isArray(currentAnswer)) {
+          // Append for MSQ
+          currentAnswer.push(option_id);
+        } else if (currentAnswer === null) {
+          // Initialize as array for MSQ or single value for MCQ
+          userAnswerMap.set(question_id, {
+            userAnswer: [option_id],
+            markedForReview: marked_for_review || false,
+          });
+        }
+      } else if (fib_answer !== null) {
+        // Store fill-in-the-blank answer as a string
+        userAnswerMap.set(question_id, {
+          userAnswer: fib_answer,
+          markedForReview: marked_for_review || false,
+        });
+      }
+    });
+
+    // Structuring the response
+    const structuredQuestions = [];
+    const passageMap = new Map();
+
+    questions.forEach((question) => {
+      const questionData = question.toJSON();
+      delete questionData.correct_answer;
+      delete questionData.fib_answer;
+
+      // Get user's selected answer and mark-for-review status
+      const userAnswerData = userAnswerMap.get(questionData.id) || {
+        userAnswer: null,
+        markedForReview: false,
+      };
+
+      if (questionData.passage_id) {
+        // Passage-Based Question
+        if (!passageMap.has(questionData.passage_id)) {
+          passageMap.set(questionData.passage_id, {
+            passage_id: questionData.passageData.id,
+            content: questionData.passageData.content,
+            content_type: questionData.passageData.content_type,
+            questions: [],
+          });
+          structuredQuestions.push(passageMap.get(questionData.passage_id));
+        }
+        // Add question inside the passage
+        passageMap.get(questionData.passage_id).questions.push({
+          id: questionData.id,
+          content: questionData.content,
+          content_type: questionData.content_type,
+          marks: questionData.marks,
+          type: questionData.type,
+          options: questionData.options, // Options included inside question
+          userAnswer: userAnswerData.userAnswer,
+          markedForReview: userAnswerData.markedForReview,
+        });
+      } else {
+        // Standalone Question
+        structuredQuestions.push({
+          id: questionData.id,
+          content: questionData.content,
+          content_type: questionData.content_type,
+          marks: questionData.marks,
+          type: questionData.type,
+          options: questionData.options, // Options included
+          userAnswer: userAnswerData.userAnswer,
+          markedForReview: userAnswerData.markedForReview,
+        });
+      }
+    });
+
+    res.status(200).json({ success: true, data: structuredQuestions });
+  } catch (error) {
+    console.error("Error fetching test attempt questions:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.getUserAnswersForAttempt = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+
+    // Fetch user answers for this test attempt
+    const userAnswers = await models.UserAnswer.findAll({
+      where: { attempt_id: attemptId },
+      attributes: ["question_id", "option_id", "fib_answer"], // Only user-selected data
+    });
+
+    res.status(200).json({ success: true, data: userAnswers });
+  } catch (error) {
+    console.error("Error fetching user answers:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 };
 
 // Get paginated question with options
 exports.getPaginatedQuestion = async (req, res) => {
   const { attemptId } = req.params;
   const page = parseInt(req.query.page) || 1;
-  const pageSize = 1; // Show one question at a time
+  const pageSize = 1;
 
   try {
     const attempt = await models.TestAttempt.findByPk(attemptId);
@@ -308,4 +496,153 @@ exports.getTestAttemptStats = async (req, res) => {
   }
 };
 
-exports.getTestResult = async (attemptId) => {};
+exports.getTestResult = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+
+    // Fetch the test attempt
+    const testAttempt = await models.TestAttempt.findOne({
+      where: { id: attemptId },
+    });
+
+    if (!testAttempt) {
+      return res.status(404).json({ message: "Test attempt not found" });
+    }
+
+    // Fetch all questions in insertion order
+    const questions = await models.Question.findAll({
+      where: { test_id: testAttempt.test_id },
+      order: [["id", "ASC"]],
+      include: [
+        {
+          model: models.Passage,
+          as: "passageData",
+          attributes: ["id", "content", "content_type"],
+        },
+        {
+          model: models.Option,
+          as: "options",
+          separate: true,
+          order: [["id", "ASC"]],
+          attributes: ["id", "question_id", "content", "content_type"],
+          include: [
+            {
+              model: models.AnswersMCQMSQ,
+              as: "correct_answer",
+            },
+          ],
+        },
+        {
+          model: models.AnswersFib,
+          as: "fib_answer",
+        },
+      ],
+    });
+
+    // Fetch user answers separately (since no direct relation exists)
+    const userAnswers = await models.UserAnswer.findAll({
+      where: { attempt_id: attemptId },
+      attributes: [
+        "question_id",
+        "option_id",
+        "fib_answer",
+        "marked_for_review",
+      ],
+    });
+
+    // Create a map of user answers for quick lookup
+    const userAnswerMap = new Map();
+
+    userAnswers.forEach((answer) => {
+      const { question_id, option_id, fib_answer, marked_for_review } = answer;
+
+      if (!userAnswerMap.has(question_id)) {
+        userAnswerMap.set(question_id, {
+          userAnswer: null,
+          markedForReview: false,
+        });
+      }
+
+      if (option_id !== null) {
+        const currentAnswer = userAnswerMap.get(question_id).userAnswer;
+
+        if (Array.isArray(currentAnswer)) {
+          // Append for MSQ
+          currentAnswer.push(option_id);
+        } else if (currentAnswer === null) {
+          // Initialize as array for MSQ or single value for MCQ
+          userAnswerMap.set(question_id, {
+            userAnswer: [option_id],
+            markedForReview: marked_for_review || false,
+          });
+        }
+      } else if (fib_answer !== null) {
+        // Store fill-in-the-blank answer as a string
+        userAnswerMap.set(question_id, {
+          userAnswer: fib_answer,
+          markedForReview: marked_for_review || false,
+        });
+      }
+    });
+
+    // Structuring the response
+    const structuredQuestions = [];
+    const passageMap = new Map();
+
+    questions.forEach((question) => {
+      const questionData = question.toJSON();
+      delete questionData.correct_answer;
+      delete questionData.fib_answer;
+
+      // Get user's selected answer and mark-for-review status
+      const userAnswerData = userAnswerMap.get(questionData.id) || {
+        userAnswer: null,
+        markedForReview: false,
+      };
+
+      if (questionData.passage_id) {
+        // Passage-Based Question
+        if (!passageMap.has(questionData.passage_id)) {
+          passageMap.set(questionData.passage_id, {
+            passage_id: questionData.passageData.id,
+            content: questionData.passageData.content,
+            content_type: questionData.passageData.content_type,
+            questions: [],
+          });
+          structuredQuestions.push(passageMap.get(questionData.passage_id));
+        }
+        // Add question inside the passage
+        passageMap.get(questionData.passage_id).questions.push({
+          id: questionData.id,
+          content: questionData.content,
+          content_type: questionData.content_type,
+          marks: questionData.marks,
+          type: questionData.type,
+          options: questionData.options, // Options included inside question
+          explanation: questionData.explanation,
+
+          userAnswer: userAnswerData.userAnswer,
+          markedForReview: userAnswerData.markedForReview,
+        });
+      } else {
+        // Standalone Question
+        structuredQuestions.push({
+          id: questionData.id,
+          content: questionData.content,
+          content_type: questionData.content_type,
+          marks: questionData.marks,
+          type: questionData.type,
+          options: questionData.options, // Options included
+          userAnswer: userAnswerData.userAnswer,
+          explanation: questionData.explanation,
+          markedForReview: userAnswerData.markedForReview,
+        });
+      }
+    });
+
+    res.status(200).json({ success: true, data: structuredQuestions });
+  } catch (error) {
+    console.error("Error fetching test attempt questions:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};

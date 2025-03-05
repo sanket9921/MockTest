@@ -3,14 +3,27 @@ const router = express.Router();
 const testAttemptController = require("../controllers/testAttemptController");
 
 router.post("/tests/:testId/start", testAttemptController.startTestAttempt);
+
+// router.get(
+//   "/attempts/:attemptId/questions",
+//   testAttemptController.getPaginatedQuestion
+// );
+
 router.get(
   "/attempts/:attemptId/questions",
-  testAttemptController.getPaginatedQuestion
+  testAttemptController.getTestAttemptQuestions
 );
+
+router.get(
+  "/attempts/:attemptId/useranswers",
+  testAttemptController.getUserAnswersForAttempt
+);
+
 router.post(
   "/attempts/:attemptId/mark-review",
   testAttemptController.markForReview
 );
+
 router.get(
   "/attempts/getTestAttemptStats/:attemptId",
   testAttemptController.getTestAttemptStats
