@@ -5,13 +5,8 @@ module.exports = (sequelize, DataTypes) => {
       id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
       attempt_id: { type: DataTypes.INTEGER, allowNull: false },
       question_id: { type: DataTypes.INTEGER, allowNull: false },
-      option_id: { type: DataTypes.INTEGER, allowNull: true }, // For MCQ/MSQ
-      fib_answer: { type: DataTypes.STRING, allowNull: true }, // For Fill in the Blank
-      marked_for_review: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
-      },
+      option_id: { type: DataTypes.INTEGER, allowNull: true },
+      fib_answer: { type: DataTypes.STRING, allowNull: true },
     },
     { tableName: "mock_test_user_answers" }
   );

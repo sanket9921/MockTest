@@ -10,6 +10,8 @@ const models = {
   AnswersFib: require("./answersFib")(sequelize, DataTypes),
   TestAttempt: require("./TestAttempt")(sequelize, DataTypes),
   UserAnswer: require("./UserAnswer")(sequelize, DataTypes),
+  ReviewStatus: require("./ReviewStatus")(sequelize, DataTypes),
+
   Passage: require("./passage")(sequelize, DataTypes),
 };
 

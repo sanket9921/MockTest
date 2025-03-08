@@ -15,9 +15,16 @@ const MenuDropdown = ({ type, onAction }) => {
       { label: "Delete Option", action: "deleteOption", danger: true },
     ],
     passage: [
-      { label: "Add Question", action: "addQuestion" },
+      { label: "Add Question (mcq)", action: "addQuestionMCQ" },
+      { label: "Add Question (msq)", action: "addQuestionMSQ" },
+
       { label: "Update Passage", action: "updatePassage" },
       { label: "Delete Passage", action: "deletePassage", danger: true },
+    ],
+    fill: [
+      { label: "Update Text Answers", action: "updateTextAnswers" },
+
+      { label: "Delete Question", action: "deleteQuestion", danger: true },
     ],
   };
 

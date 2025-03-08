@@ -16,7 +16,7 @@ const QuestionNavigator = ({ questions, currentQuestionIndex, onNavigate }) => {
         }
       });
 
-      if (q.markedForReview) {
+      if (q.questions[0]?.markedForReview) {
         passageStatus[q.passage_id].marked = true;
       }
     }

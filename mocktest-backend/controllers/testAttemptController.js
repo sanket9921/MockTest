@@ -22,20 +22,58 @@ exports.startTestAttempt = async (req, res) => {
         message: "Resuming existing test attempt.",
       });
     }
+    const test = await models.Test.findByPk(testId);
+    const startTime = new Date();
+    let endTime = null;
+
+    // Set end time only if the test has a duration
+    if (test.duration && test.duration > 0) {
+      endTime = new Date(startTime.getTime() + test.duration * 60 * 1000);
+    }
 
     // Create a new test attempt
     const attempt = await models.TestAttempt.create({
       user_id: userId,
       test_id: testId,
+      start_time: startTime,
+      end_time: endTime,
     });
 
     res.status(201).json({
       attemptId: attempt.id,
       message: "Test started successfully",
+      startTime,
+      endTime,
+      hasTimeLimit: !!endTime, // Send a flag to the frontend
     });
   } catch (error) {
     console.error("Error starting test:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.getRemainingTime = async (req, res) => {
+  const { attemptId } = req.params;
+
+  try {
+    const attempt = await models.TestAttempt.findByPk(attemptId);
+    if (!attempt) return res.status(404).json({ message: "Attempt not found" });
+
+    if (!attempt.end_time) {
+      // If no time limit, return null
+      return res.json({ remainingTime: null });
+    }
+
+    const currentTime = new Date();
+    const endTime = new Date(attempt.end_time);
+    const remainingTime = Math.max(
+      Math.floor((endTime - currentTime) / 1000),
+      0
+    );
+
+    res.json({ remainingTime });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -77,51 +115,51 @@ exports.getTestAttemptQuestions = async (req, res) => {
       ],
     });
 
-    // Fetch user answers separately (since no direct relation exists)
+    // Fetch user answers separately
     const userAnswers = await models.UserAnswer.findAll({
       where: { attempt_id: attemptId },
-      attributes: [
-        "question_id",
-        "option_id",
-        "fib_answer",
-        "marked_for_review",
-      ],
+      attributes: ["question_id", "option_id", "fib_answer"],
     });
 
-    // Create a map of user answers for quick lookup
+    // Fetch mark-for-review status separately
+    const reviewStatusList = await models.ReviewStatus.findAll({
+      where: { attempt_id: attemptId },
+      attributes: ["question_id", "marked_for_review"],
+    });
+
+    // Create a map of user answers
     const userAnswerMap = new Map();
 
-    userAnswers.forEach((answer) => {
-      const { question_id, option_id, fib_answer, marked_for_review } = answer;
-
+    userAnswers.forEach(({ question_id, option_id, fib_answer }) => {
       if (!userAnswerMap.has(question_id)) {
         userAnswerMap.set(question_id, {
           userAnswer: null,
-          markedForReview: false,
         });
       }
 
       if (option_id !== null) {
         const currentAnswer = userAnswerMap.get(question_id).userAnswer;
-
         if (Array.isArray(currentAnswer)) {
-          // Append for MSQ
           currentAnswer.push(option_id);
         } else if (currentAnswer === null) {
-          // Initialize as array for MSQ or single value for MCQ
           userAnswerMap.set(question_id, {
             userAnswer: [option_id],
-            markedForReview: marked_for_review || false,
           });
         }
       } else if (fib_answer !== null) {
-        // Store fill-in-the-blank answer as a string
         userAnswerMap.set(question_id, {
           userAnswer: fib_answer,
-          markedForReview: marked_for_review || false,
         });
       }
     });
+
+    // Create a map of review statuses
+    const reviewStatusMap = new Map(
+      reviewStatusList.map(({ question_id, marked_for_review }) => [
+        question_id,
+        marked_for_review,
+      ])
+    );
 
     // Structuring the response
     const structuredQuestions = [];
@@ -132,11 +170,13 @@ exports.getTestAttemptQuestions = async (req, res) => {
       delete questionData.correct_answer;
       delete questionData.fib_answer;
 
-      // Get user's selected answer and mark-for-review status
+      // Get user's selected answer
       const userAnswerData = userAnswerMap.get(questionData.id) || {
         userAnswer: null,
-        markedForReview: false,
       };
+
+      // Get review status
+      const markedForReview = reviewStatusMap.get(questionData.id) || false;
 
       if (questionData.passage_id) {
         // Passage-Based Question
@@ -158,7 +198,7 @@ exports.getTestAttemptQuestions = async (req, res) => {
           type: questionData.type,
           options: questionData.options, // Options included inside question
           userAnswer: userAnswerData.userAnswer,
-          markedForReview: userAnswerData.markedForReview,
+          markedForReview,
         });
       } else {
         // Standalone Question
@@ -170,7 +210,7 @@ exports.getTestAttemptQuestions = async (req, res) => {
           type: questionData.type,
           options: questionData.options, // Options included
           userAnswer: userAnswerData.userAnswer,
-          markedForReview: userAnswerData.markedForReview,
+          markedForReview,
         });
       }
     });
@@ -366,33 +406,57 @@ exports.saveAnswer = async (req, res) => {
   }
 };
 
-exports.markForReview = async (req, res) => {
+exports.clearAnswer = async (req, res) => {
   const { attemptId } = req.params;
-  const { question_id, marked_for_review } = req.body; // Only handling review marking
+  const { question_id } = req.body;
 
   try {
-    const existingAnswer = await models.UserAnswer.findOne({
-      where: { attempt_id: attemptId, question_id },
-    });
-
-    if (!existingAnswer) {
-      // If no answer exists, create an empty one just for marking review
-      await models.UserAnswer.create({
-        attempt_id: attemptId,
-        question_id,
-        option_id: null,
-        fib_answer: null,
-        marked_for_review,
-      });
-    } else {
-      // Just update the review status
-      await existingAnswer.update({ marked_for_review });
+    // Ensure attemptId and question_id are provided
+    if (!attemptId || !question_id) {
+      return res
+        .status(400)
+        .json({ message: "Attempt ID and Question ID are required." });
     }
 
-    return res.json({ message: "Marked for review updated successfully" });
+    // Update the answer instead of deleting it
+    await models.UserAnswer.update(
+      { option_id: null, fib_answer: null }, // Set values to null
+      { where: { attempt_id: attemptId, question_id } }
+    );
+
+    return res.json({ message: "Answer cleared successfully" });
   } catch (error) {
-    console.error("Error marking for review:", error);
+    console.error("Error clearing answer:", error);
     return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.markForReview = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    const { question_id, marked_for_review } = req.body;
+
+    if (!attemptId || !question_id || marked_for_review === undefined) {
+      return res.status(400).json({
+        message: "attemptId, question_id, and marked_for_review are required",
+      });
+    }
+
+    // Update or insert the marked status
+    const [review] = await models.ReviewStatus.upsert(
+      { attempt_id: attemptId, question_id, marked_for_review },
+      { returning: true }
+    );
+
+    res.status(200).json({
+      message: marked_for_review
+        ? "Question marked for review"
+        : "Question unmarked from review",
+      data: review,
+    });
+  } catch (error) {
+    console.error("Error updating review status:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -591,8 +655,6 @@ exports.getTestResult = async (req, res) => {
 
     questions.forEach((question) => {
       const questionData = question.toJSON();
-      delete questionData.correct_answer;
-      delete questionData.fib_answer;
 
       // Get user's selected answer and mark-for-review status
       const userAnswerData = userAnswerMap.get(questionData.id) || {
@@ -634,6 +696,7 @@ exports.getTestResult = async (req, res) => {
           type: questionData.type,
           options: questionData.options, // Options included
           userAnswer: userAnswerData.userAnswer,
+          fib_answer: questionData.fib_answer,
           explanation: questionData.explanation,
           markedForReview: userAnswerData.markedForReview,
         });

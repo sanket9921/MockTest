@@ -6,6 +6,7 @@ import HomePage from "../pages/HomePage";
 import TestsList from "../pages/TestsList";
 import RulesPage from "../pages/RulesPage";
 import TestAttemptPage from "../pages/TestAttemptPage";
+import ResultPage from "../pages/ResultPage";
 
 const AppRouter = () => {
   return (
@@ -20,6 +21,7 @@ const AppRouter = () => {
         <Route path="/attempt/:attemptId" element={<TestAttemptPage />} />
 
         <Route path="/addquestions/:testid" element={<AddQuestion />} />
+        <Route path="/result/:attemptId" element={<ResultPage />} />
       </Routes>
     </Router>
   );

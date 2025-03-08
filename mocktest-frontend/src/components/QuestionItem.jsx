@@ -22,7 +22,9 @@ const QuestionItem = ({ question, onAction }) => {
             </span>
             <div className="flex items-center">
               <MenuDropdown
-                type="question"
+                type={
+                  question.type === "fill_in_the_blank" ? "fill" : "question"
+                }
                 onAction={(action) => onAction(action, question)}
               />
               <ChevronDownIcon

@@ -1,6 +1,6 @@
 import React from "react";
 
-const QuestionMCQMSQ = ({ question, onSaveAnswer }) => {
+const QuestionMCQMSQ = ({ question, onSaveAnswer, onClear }) => {
   if (!question) return null;
 
   const handleOptionChange = (optionId) => {
@@ -45,7 +45,7 @@ const QuestionMCQMSQ = ({ question, onSaveAnswer }) => {
                 type="radio"
                 name={`question-${question.id}`}
                 value={option.id}
-                checked={question.userAnswer?.includes(option.id)}
+                checked={question.userAnswer?.includes(option.id) || ""}
                 onChange={() => handleOptionChange(option.id)}
                 className="form-radio text-blue-600"
               />
@@ -53,7 +53,7 @@ const QuestionMCQMSQ = ({ question, onSaveAnswer }) => {
               <input
                 type="checkbox"
                 value={option.id}
-                checked={question.userAnswer?.includes(option.id)}
+                checked={question.userAnswer?.includes(option.id) || ""}
                 onChange={() => handleOptionChange(option.id)}
                 className="form-checkbox text-blue-600"
               />
@@ -72,6 +72,7 @@ const QuestionMCQMSQ = ({ question, onSaveAnswer }) => {
           </label>
         ))}
       </div>
+      <button onClick={() => onClear(question.id)}>Clear</button>
     </div>
   );
 };

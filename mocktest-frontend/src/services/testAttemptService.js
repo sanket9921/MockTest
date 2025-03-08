@@ -37,7 +37,23 @@ export const markQuestionForReview = async (
   });
 };
 
+export const clearAnswer = async (attemptId, questionId) => {
+  await API.post(`/attempts/${attemptId}/clearAnswer`, {
+    question_id: questionId,
+  });
+};
+
 export const getTestAttemptStats = async (attemptId) => {
   const res = await API.get(`/attempts/getTestAttemptStats/${attemptId}`);
+  return res.data;
+};
+
+export const getResult = async (attemptId) => {
+  const res = await API.get(`attempts/${attemptId}/result`);
+  return res.data;
+};
+
+export const getRemainingTime = async (attemptId) => {
+  const res = await API.get(`attempts/getRemainingTime/${attemptId}`);
   return res.data;
 };

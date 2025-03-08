@@ -24,9 +24,18 @@ router.post(
   testAttemptController.markForReview
 );
 
+router.post(
+  "/attempts/:attemptId/clearAnswer",
+  testAttemptController.clearAnswer
+);
+
 router.get(
   "/attempts/getTestAttemptStats/:attemptId",
   testAttemptController.getTestAttemptStats
+);
+router.get(
+  "/attempts/getRemainingTime/:attemptId",
+  testAttemptController.getRemainingTime
 );
 
 router.post("/attempts/:attemptId/answer", testAttemptController.saveAnswer);

@@ -12,11 +12,11 @@ exports.addQuestionService = async (data, files, transaction) => {
     question_type,
     explanation,
     marks,
+    negativeMark,
     options,
     correct_answers,
   } = data;
 
-  console.log(files);
   // Parse options if they are a string (from form-data)
   if (typeof options === "string") {
     options = JSON.parse(options);
@@ -40,6 +40,7 @@ exports.addQuestionService = async (data, files, transaction) => {
       content: questionContent,
       content_type,
       marks,
+      negative_marks: negativeMark,
       type: question_type,
       explanation,
     },

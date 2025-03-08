@@ -59,6 +59,15 @@ const QuestionInput = ({ question, setQuestion, selectedQuestion }) => {
     checkForChanges(updatedQuestion);
   };
 
+  // Handle marks change
+  const handleNegativeMarksChange = (e) => {
+    const updatedQuestion = {
+      ...question,
+      negative_marks: e.target.value,
+    };
+    setQuestion(updatedQuestion);
+    checkForChanges(updatedQuestion);
+  };
   // Check if there are any changes compared to selectedQuestion
   const checkForChanges = (updatedQuestion) => {
     if (!selectedQuestion) {
@@ -135,6 +144,18 @@ const QuestionInput = ({ question, setQuestion, selectedQuestion }) => {
           className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={question.marks}
           onChange={handleMarksChange}
+        />
+      </div>
+
+      <div className="mt-2">
+        <label className="text-sm font-medium text-gray-700">
+          Negative Marks (optional)
+        </label>
+        <input
+          type="number"
+          className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={question.negative_marks}
+          onChange={handleNegativeMarksChange}
         />
       </div>
 

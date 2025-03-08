@@ -71,6 +71,7 @@ const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
           onChange={(e) =>
             updateQuestion(question.id, { content: e.target.value })
           }
+          placeholder="Enter the Question"
         />
       ) : (
         <input
@@ -87,6 +88,16 @@ const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
         placeholder="Marks"
         value={question.marks}
         onChange={(e) => updateQuestion(question.id, { marks: e.target.value })}
+      />
+
+      <input
+        className="w-full p-2 border mt-2"
+        type="number"
+        placeholder="Negative Marks (optional)"
+        value={question.negative_marks}
+        onChange={(e) =>
+          updateQuestion(question.id, { negative_marks: e.target.value })
+        }
       />
 
       {question.options.map((opt, index) => (

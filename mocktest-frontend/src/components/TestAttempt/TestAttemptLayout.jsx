@@ -2,11 +2,14 @@ import { useState, useEffect } from "react";
 import QuestionDisplay from "./QuestionDisplay";
 import QuestionNavigator from "./QuestionNavigator";
 import {
+  clearAnswer,
   getTestAttsemptQuestions,
+  markQuestionForReview,
   saveUserAnswer,
   submitTest,
 } from "../../services/testAttemptService";
 import SubmitButton from "./SubmitButton";
+import Timer from "./Timer";
 
 const TestAttemptLayout = ({ attemptId }) => {
   const [questions, setQuestions] = useState([]);
@@ -36,30 +39,51 @@ const TestAttemptLayout = ({ attemptId }) => {
     setCurrentQuestionIndex(index);
   };
 
-  // Clear Answer
-  const handleClearAnswer = () => {
-    const questionId = questions[currentQuestionIndex]?.id;
-    if (questionId) {
-      handleSaveAnswer(questionId, null);
-    }
-  };
-
   const handleSubmitTest = async () => {
     await submitTest(attemptId);
     console.log("test submitted");
+  };
+
+  const handleMarkForReview = async () => {
+    console.log(questions[currentQuestionIndex]);
+    if (questions[currentQuestionIndex].passage_id) {
+      await markQuestionForReview(
+        attemptId,
+        questions[currentQuestionIndex].questions[0]?.id,
+        !questions[currentQuestionIndex].questions[0]?.markedForReview
+      );
+    } else {
+      await markQuestionForReview(
+        attemptId,
+        questions[currentQuestionIndex]?.id,
+        !questions[currentQuestionIndex]?.markedForReview
+      );
+    }
+    fetchQuestions();
+  };
+
+  const handleClearAnswer = async (questionId) => {
+    // if (questions[currentQuestionIndex].passage_id){
+    //   await clearAnswer(attemptId,questions[currentQuestionIndex].que)
+    // }
+
+    await clearAnswer(attemptId, questionId);
+    fetchQuestions();
   };
 
   if (questions.length === 0) return <p>Loading...</p>;
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
+      <Timer attemptId={attemptId} onTimeUp={handleSubmitTest} />
+
       {/* Main Content */}
       <div className="flex flex-1">
         {/* Question Display */}
         <QuestionDisplay
           questionData={questions[currentQuestionIndex]}
-          userAnswer={userAnswers[questions[currentQuestionIndex]?.id]}
           onSaveAnswer={handleSaveAnswer}
+          onClear={handleClearAnswer}
         />
 
         {/* Question Navigator */}
@@ -81,22 +105,26 @@ const TestAttemptLayout = ({ attemptId }) => {
           Previous
         </button>
 
-        {/* Clear Answer */}
-        <button
-          onClick={handleClearAnswer}
-          className="px-4 py-2 bg-yellow-500 text-white rounded"
-        >
-          Clear
-        </button>
-
         {/* Mark for Review */}
         <button
-          onClick={() =>
-            handleSaveAnswer(questions[currentQuestionIndex]?.id, "review")
-          }
+          onClick={handleMarkForReview}
           className="px-4 py-2 bg-blue-500 text-white rounded"
         >
-          Mark for Review
+          {(() => {
+            const currentQuestion = questions[currentQuestionIndex];
+
+            // If it's a passage-based question, check the first question inside
+            if (currentQuestion?.questions) {
+              return currentQuestion.questions[0]?.markedForReview
+                ? "Unmark Review"
+                : "Mark for Review";
+            }
+
+            // If it's a standalone question
+            return currentQuestion?.markedForReview
+              ? "Unmark Review"
+              : "Mark for Review";
+          })()}
         </button>
 
         {/* Next / Submit */}

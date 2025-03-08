@@ -1,6 +1,6 @@
 import React from "react";
 
-const FillInTheBlank = ({ question, onSaveAnswer }) => {
+const FillInTheBlank = ({ question, onSaveAnswer, onClear }) => {
   return (
     <div className="mt-4">
       <h2 className="text-lg font-semibold text-gray-800">
@@ -13,6 +13,7 @@ const FillInTheBlank = ({ question, onSaveAnswer }) => {
         value={question.userAnswer || ""}
         onChange={(e) => onSaveAnswer(question.id, e.target.value)}
       />
+      <button onClick={() => onClear(question.id)}>clear</button>
     </div>
   );
 };

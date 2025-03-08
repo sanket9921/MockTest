@@ -21,7 +21,9 @@ const PassageForm = ({ testId }) => {
         type,
         content: "",
         contentType: "text",
-        marks: "",
+        marks: 1,
+        negative_marks: 0,
+
         options: [
           { content: "", contentType: "text", isCorrect: false },
           { content: "", contentType: "text", isCorrect: false },
@@ -58,6 +60,7 @@ const PassageForm = ({ testId }) => {
         q.type === "MCQ" ? "single_choice" : "multiple_choice"
       );
       formData.append(`questions[${qIndex}][marks]`, q.marks);
+      formData.append(`questions[${qIndex}][negativeMark]`, q.negative_marks);
 
       q.options.forEach((opt, optIndex) => {
         formData.append(
@@ -105,6 +108,7 @@ const PassageForm = ({ testId }) => {
             onChange={(e) =>
               setPassage({ ...passage, content: e.target.value })
             }
+            placeholder="Enter the passage"
           />
         ) : (
           <input

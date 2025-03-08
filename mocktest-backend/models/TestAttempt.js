@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
     "TestAttempt",
     {
       id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-      user_id: { type: DataTypes.INTEGER, allowNull: false }, // Comes from main project
+      user_id: { type: DataTypes.INTEGER, allowNull: false },
       test_id: { type: DataTypes.INTEGER, allowNull: false },
       start_time: {
         type: DataTypes.DATE,
@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 0,
-      }, // Stores final score
+      },
     },
     { tableName: "mock_test_attempts" }
   );

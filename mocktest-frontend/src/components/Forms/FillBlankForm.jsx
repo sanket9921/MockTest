@@ -12,6 +12,7 @@ const FillBlankForm = ({
     content: "",
     content_type: "text",
     marks: 1,
+    negative_marks: 0,
     explanation: "",
     file: null,
   };
@@ -64,6 +65,8 @@ const FillBlankForm = ({
     formData.append("test_id", testId);
     formData.append("question_type", "fill_in_the_blank");
     formData.append("marks", question.marks);
+    formData.append("negativeMark", question.negative_marks);
+
     formData.append("explanation", question.explanation);
 
     if (question.content_type === "text") {

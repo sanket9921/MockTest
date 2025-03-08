@@ -64,6 +64,7 @@ const QuestionForm = ({
       <QuestionInput question={question} setQuestion={setQuestion} />
       {errors.question && <p className="text-red-500">{errors.question}</p>}
       {errors.marks && <p className="text-red-500">{errors.marks}</p>}
+
       {options.map((option, index) => (
         <div key={index}>
           <OptionInput

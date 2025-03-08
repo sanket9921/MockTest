@@ -2,7 +2,7 @@ import React from "react";
 import QuestionMCQMSQ from "./QuestionMCQMSQ";
 import FillInTheBlank from "./FillInTheBlank";
 
-const PassageQuestion = ({ passage, userAnswers, onSaveAnswer }) => {
+const PassageQuestion = ({ passage, userAnswers, onSaveAnswer, onClear }) => {
   if (!passage) return null;
 
   return (
@@ -34,12 +34,14 @@ const PassageQuestion = ({ passage, userAnswers, onSaveAnswer }) => {
                 question={question}
                 userAnswer={userAnswers?.[question.id] || ""}
                 onSaveAnswer={onSaveAnswer}
+                onClear={onClear}
               />
             ) : (
               <QuestionMCQMSQ
                 question={question}
                 userAnswer={userAnswers?.[question.id] || []}
                 onSaveAnswer={onSaveAnswer}
+                onClear={onClear}
               />
             )}
           </div>

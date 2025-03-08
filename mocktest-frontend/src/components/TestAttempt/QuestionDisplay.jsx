@@ -4,7 +4,12 @@ import QuestionMCQMSQ from "./QuestionMCQMSQ";
 import PassageQuestion from "./PassageQuestion";
 import FillInTheBlank from "./FillInTheBlank";
 
-const QuestionDisplay = ({ questionData, userAnswer, onSaveAnswer }) => {
+const QuestionDisplay = ({
+  questionData,
+  userAnswer,
+  onSaveAnswer,
+  onClear,
+}) => {
   if (!questionData) return null;
 
   return (
@@ -20,6 +25,7 @@ const QuestionDisplay = ({ questionData, userAnswer, onSaveAnswer }) => {
           passage={questionData}
           userAnswers={userAnswer}
           onSaveAnswer={onSaveAnswer}
+          onClear={onClear}
         />
       ) : (
         // Standalone Questions
@@ -30,6 +36,7 @@ const QuestionDisplay = ({ questionData, userAnswer, onSaveAnswer }) => {
               question={questionData}
               userAnswer={userAnswer?.[questionData.id] || ""}
               onSaveAnswer={onSaveAnswer}
+              onClear={onClear}
             />
           )}
 
@@ -39,6 +46,7 @@ const QuestionDisplay = ({ questionData, userAnswer, onSaveAnswer }) => {
               question={questionData}
               userAnswer={userAnswer?.[questionData.id] || []}
               onSaveAnswer={onSaveAnswer}
+              onClear={onClear}
             />
           )}
         </>
