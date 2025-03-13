@@ -22,22 +22,30 @@ const QuestionMCQMSQ = ({ question, onSaveAnswer, onClear }) => {
   };
 
   return (
-    <div className="p-4 bg-white shadow-md rounded-lg">
+    <div className="w-100 py-4">
       {/* Question Text or Image */}
-      <div className="mb-4 text-lg font-semibold">
+      <div className="w-100 mb-3">
         {question.content_type === "text" ? (
-          <p>{question.content}</p>
+          <p
+            className="w-100"
+            dangerouslySetInnerHTML={{ __html: question?.content }}
+          />
         ) : (
-          <img src={question.content} alt="Question" className="rounded-lg" />
+          <img
+            src={question.content}
+            alt="Question"
+            className="img-fluid rounded-lg w-100"
+          />
         )}
       </div>
 
-      {/* Options */}
-      <div className="space-y-2">
+      {/* Options - Full Width */}
+      <div className="d-flex flex-column gap-2 w-100">
         {question.options.map((option) => (
           <label
             key={option.id}
-            className="flex items-center space-x-2 cursor-pointer"
+            className="d-flex align-items-center border p-3 w-100 rounded"
+            style={{ cursor: "pointer" }}
           >
             {/* Radio Button for MCQ, Checkbox for MSQ */}
             {question.type === "single_choice" ? (
@@ -47,7 +55,7 @@ const QuestionMCQMSQ = ({ question, onSaveAnswer, onClear }) => {
                 value={option.id}
                 checked={question.userAnswer?.includes(option.id) || ""}
                 onChange={() => handleOptionChange(option.id)}
-                className="form-radio text-blue-600"
+                className="form-check-input me-2"
               />
             ) : (
               <input
@@ -55,24 +63,34 @@ const QuestionMCQMSQ = ({ question, onSaveAnswer, onClear }) => {
                 value={option.id}
                 checked={question.userAnswer?.includes(option.id) || ""}
                 onChange={() => handleOptionChange(option.id)}
-                className="form-checkbox text-blue-600"
+                className="form-check-input me-2"
               />
             )}
 
             {/* Option Text or Image */}
-            {option.content_type === "text" ? (
-              <span>{option.content}</span>
-            ) : (
-              <img
-                src={option.content}
-                alt="Option"
-                className="h-10 w-10 object-cover rounded"
-              />
-            )}
+            <div className="flex-grow-1">
+              {option.content_type === "text" ? (
+                <span className="w-100">{option.content}</span>
+              ) : (
+                <img
+                  src={option.content}
+                  alt="Option"
+                  className="img-fluid w-100"
+                  style={{ maxHeight: "50px", objectFit: "contain" }}
+                />
+              )}
+            </div>
           </label>
         ))}
       </div>
-      <button onClick={() => onClear(question.id)}>Clear</button>
+
+      {/* Clear Button */}
+      <button
+        onClick={() => onClear(question.id)}
+        className="btn btn-secondary btn-sm mt-3"
+      >
+        Clear
+      </button>
     </div>
   );
 };

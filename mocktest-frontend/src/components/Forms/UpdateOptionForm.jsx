@@ -1,5 +1,4 @@
 import { useState } from "react";
-import axios from "axios";
 import { updateOption } from "../../services/optionService";
 
 const UpdateOptionForm = ({ data, onClose }) => {
@@ -23,7 +22,6 @@ const UpdateOptionForm = ({ data, onClose }) => {
 
     try {
       await updateOption(data.id, formData);
-
       onClose();
     } catch (error) {
       console.error(error);
@@ -33,15 +31,15 @@ const UpdateOptionForm = ({ data, onClose }) => {
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-lg font-semibold mb-4">Update Option</h2>
-      <form onSubmit={handleUpdate} className="space-y-4">
+    <div className="p-3 bg-white rounded shadow">
+      <h4 className="mb-3 fw-bold">Update Option</h4>
+      <form onSubmit={handleUpdate}>
         {/* Content Type Toggle */}
-        <div className="flex gap-4">
+        <div className="btn-group mb-3">
           <button
             type="button"
-            className={`py-1 px-4 rounded ${
-              contentType === "text" ? "bg-blue-500 text-white" : "bg-gray-200"
+            className={`btn ${
+              contentType === "text" ? "btn-primary" : "btn-outline-secondary"
             }`}
             onClick={() => setContentType("text")}
           >
@@ -49,8 +47,8 @@ const UpdateOptionForm = ({ data, onClose }) => {
           </button>
           <button
             type="button"
-            className={`py-1 px-4 rounded ${
-              contentType === "image" ? "bg-blue-500 text-white" : "bg-gray-200"
+            className={`btn ${
+              contentType === "image" ? "btn-primary" : "btn-outline-secondary"
             }`}
             onClick={() => setContentType("image")}
           >
@@ -60,33 +58,44 @@ const UpdateOptionForm = ({ data, onClose }) => {
 
         {/* Text Input */}
         {contentType === "text" && (
-          <input
-            type="text"
-            className="w-full p-2 border rounded"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            required
-          />
+          <div className="mb-3">
+            <input
+              type="text"
+              className="form-control"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              required
+            />
+          </div>
         )}
 
         {/* Image Upload */}
         {contentType === "image" && (
-          <input
-            type="file"
-            accept="image/*"
-            className="w-full p-2 border rounded"
-            onChange={(e) => setImage(e.target.files[0])}
-            required
-          />
+          <div className="mb-3">
+            <input
+              type="file"
+              accept="image/*"
+              className="form-control"
+              onChange={(e) => setImage(e.target.files[0])}
+              required
+            />
+          </div>
         )}
 
         {/* Submit Button */}
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white py-2 rounded disabled:bg-gray-400"
+          className="btn btn-primary w-100"
           disabled={loading}
         >
-          {loading ? "Updating..." : "Update Option"}
+          {loading ? (
+            <>
+              <span className="spinner-border spinner-border-sm me-2"></span>
+              Updating...
+            </>
+          ) : (
+            "Update Option"
+          )}
         </button>
       </form>
     </div>

@@ -1,4 +1,5 @@
 const { models } = require("../models");
+const { Op, Sequelize } = require("sequelize");
 
 exports.startTestAttempt = async (req, res) => {
   const { testId } = req.params;
@@ -462,90 +463,143 @@ exports.markForReview = async (req, res) => {
 
 // Submit test and calculate score
 exports.submitTest = async (req, res) => {
-  const { attemptId } = req.params;
-  const attempt = await models.TestAttempt.findByPk(attemptId, {
-    include: [{ model: models.UserAnswer }],
-  });
+  try {
+    const { attemptId } = req.params;
 
-  if (!attempt) return res.status(404).json({ message: "Attempt not found" });
+    // Fetch the test attempt with user answers
+    const attempt = await models.TestAttempt.findByPk(attemptId, {
+      include: [{ model: models.UserAnswer }],
+    });
 
-  let totalScore = 0;
+    if (!attempt) {
+      return res.status(404).json({ message: "Attempt not found" });
+    }
 
-  for (const answer of attempt.UserAnswers) {
-    const question = await models.Question.findByPk(answer.question_id);
-    if (!question) continue;
+    let marksGained = 0;
+    let negativeMarks = 0;
+    let attemptedQuestions = 0;
+    let totalMarks = 0;
 
-    if (
-      question.type === "single_choice" ||
-      question.type === "multiple_choice"
-    ) {
-      const correctOptions = await models.AnswersMCQMSQ.findAll({
-        where: { question_id: question.id },
-      });
-      const correctOptionIds = correctOptions.map((opt) => opt.option_id);
+    for (const answer of attempt.UserAnswers) {
+      const question = await models.Question.findByPk(answer.question_id);
+      if (!question) continue;
 
-      if (question.type === "single_choice") {
-        if (correctOptionIds.includes(answer.option_id))
-          totalScore += question.marks;
-      } else if (question.type === "multiple_choice") {
-        const userSelectedOptions = await models.UserAnswer.findAll({
-          where: { attempt_id: attempt.id, question_id: question.id },
+      totalMarks += question.marks; // Add to total possible marks
+      attemptedQuestions++; // Count attempted questions
+
+      if (
+        question.type === "single_choice" ||
+        question.type === "multiple_choice"
+      ) {
+        const correctOptions = await models.AnswersMCQMSQ.findAll({
+          where: { question_id: question.id },
         });
-        const userOptionIds = userSelectedOptions.map((ans) => ans.option_id);
+        const correctOptionIds = correctOptions.map((opt) => opt.option_id);
+
+        if (question.type === "single_choice") {
+          if (correctOptionIds.includes(answer.option_id)) {
+            marksGained += question.marks; // Award marks for correct answer
+          } else {
+            negativeMarks += question.negative_marks || 0; // Deduct negative marks if applicable
+          }
+        } else if (question.type === "multiple_choice") {
+          const userSelectedOptions = await models.UserAnswer.findAll({
+            where: { attempt_id: attempt.id, question_id: question.id },
+          });
+          const userOptionIds = userSelectedOptions.map((ans) => ans.option_id);
+
+          if (
+            JSON.stringify(userOptionIds.sort()) ===
+            JSON.stringify(correctOptionIds.sort())
+          ) {
+            marksGained += question.marks; // Award full marks if all selected options are correct
+          } else {
+            negativeMarks += question.negative_marks || 0; // Deduct negative marks for wrong selection
+          }
+        }
+      } else if (question.type === "fill_in_the_blank") {
+        const correctAnswer = await models.AnswersFib.findOne({
+          where: { question_id: question.id },
+        });
 
         if (
-          JSON.stringify(userOptionIds.sort()) ===
-          JSON.stringify(correctOptionIds.sort())
+          correctAnswer &&
+          correctAnswer.correctTextAnswer.toLowerCase() ===
+            answer.fib_answer.toLowerCase()
         ) {
-          totalScore += question.marks;
+          marksGained += question.marks; // Award marks for correct answer
+        } else {
+          negativeMarks += question.negative_marks || 0; // Deduct negative marks if wrong
         }
       }
-    } else if (question.type === "fill_in_the_blank") {
-      const correctAnswer = await models.AnswersFib.findOne({
-        where: { question_id: question.id },
-      });
-      if (
-        correctAnswer &&
-        correctAnswer.correctTextAnswer.toLowerCase() ===
-          answer.fib_answer.toLowerCase()
-      ) {
-        totalScore += question.marks;
-      }
     }
+
+    // Subtract negative marks from gained marks
+    const finalScore = Math.max(0, marksGained - negativeMarks);
+
+    // Update the attempt with calculated values
+    await attempt.update({
+      total_marks: totalMarks,
+      marks_gained: marksGained,
+      negative_marks: negativeMarks,
+      final_score: finalScore, // New column for final score after deduction
+      attempted_questions: attemptedQuestions,
+      status: "completed",
+      end_time: new Date(),
+    });
+
+    res.json({
+      message: "Test submitted successfully",
+      total_marks: totalMarks,
+      marks_gained: marksGained,
+      negative_marks: negativeMarks,
+      final_score: finalScore, // Final score after subtracting negative marks
+      attempted_questions: attemptedQuestions,
+    });
+  } catch (error) {
+    console.error("Error submitting test:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
-
-  await attempt.update({
-    total_score: totalScore,
-    status: "completed",
-    end_time: new Date(),
-  });
-
-  res.json({ message: "Test submitted", finalScore: totalScore });
 };
 
 exports.getTestAttemptStats = async (req, res) => {
   try {
     const { attemptId } = req.params;
 
-    const attempt = await models.TestAttempt.findByPk(attemptId, {
-      include: [{ model: models.UserAnswer }],
-    });
+    // Fetch attempt details
+    const attempt = await models.TestAttempt.findByPk(attemptId);
+
+    if (!attempt) {
+      return res.status(404).json({ message: "Attempt not found" });
+    }
+
     // Get total questions for the test
     const totalQuestions = await models.Question.count({
       where: { test_id: attempt.test_id },
     });
 
-    // Get attempted questions (questions with saved answers)
+    // Get attempted questions: Count DISTINCT question_id where option_id OR fib_answer is not null
     const attemptedQuestions = await models.UserAnswer.count({
-      where: { attempt_id: attemptId },
+      where: {
+        attempt_id: attemptId,
+        [Op.or]: [
+          // ✅ Use `Op` correctly
+          { option_id: { [Op.ne]: null } },
+          { fib_answer: { [Op.ne]: null } },
+        ],
+      },
+      distinct: true,
+      col: "question_id",
     });
 
-    // // Get questions marked for review
-    const markedForReview = await models.UserAnswer.count({
+    // Get questions marked for review
+    const markedForReview = await models.ReviewStatus.count({
       where: { attempt_id: attemptId, marked_for_review: true },
+      distinct: true,
+      col: "question_id",
     });
 
-    // Unanswered questions = Total questions - Attempted
+    // Unanswered questions = Total questions - Attempted questions
     const unansweredQuestions = totalQuestions - attemptedQuestions;
 
     res.json({
@@ -564,16 +618,24 @@ exports.getTestResult = async (req, res) => {
   try {
     const { attemptId } = req.params;
 
-    // Fetch the test attempt
+    // Fetch the test attempt (with pre-calculated stats)
     const testAttempt = await models.TestAttempt.findOne({
       where: { id: attemptId },
+      attributes: [
+        "test_id",
+        "total_marks",
+        "marks_gained",
+        "attempted_questions",
+        "final_score",
+        "negative_marks",
+      ],
     });
 
     if (!testAttempt) {
       return res.status(404).json({ message: "Test attempt not found" });
     }
 
-    // Fetch all questions in insertion order
+    // Fetch all questions (order maintained)
     const questions = await models.Question.findAll({
       where: { test_id: testAttempt.test_id },
       order: [["id", "ASC"]],
@@ -603,50 +665,32 @@ exports.getTestResult = async (req, res) => {
       ],
     });
 
-    // Fetch user answers separately (since no direct relation exists)
+    // Fetch user answers
     const userAnswers = await models.UserAnswer.findAll({
       where: { attempt_id: attemptId },
-      attributes: [
-        "question_id",
-        "option_id",
-        "fib_answer",
-        "marked_for_review",
-      ],
+      attributes: ["question_id", "option_id", "fib_answer"],
     });
 
-    // Create a map of user answers for quick lookup
+    // Fetch marked for review data
+    const reviewStatuses = await models.ReviewStatus.findAll({
+      where: { attempt_id: attemptId },
+      attributes: ["question_id", "marked_for_review"],
+    });
+
+    // Map user answers and review statuses
     const userAnswerMap = new Map();
-
     userAnswers.forEach((answer) => {
-      const { question_id, option_id, fib_answer, marked_for_review } = answer;
-
-      if (!userAnswerMap.has(question_id)) {
-        userAnswerMap.set(question_id, {
-          userAnswer: null,
-          markedForReview: false,
-        });
+      if (!userAnswerMap.has(answer.question_id)) {
+        userAnswerMap.set(answer.question_id, []);
       }
+      userAnswerMap
+        .get(answer.question_id)
+        .push(answer.option_id || answer.fib_answer);
+    });
 
-      if (option_id !== null) {
-        const currentAnswer = userAnswerMap.get(question_id).userAnswer;
-
-        if (Array.isArray(currentAnswer)) {
-          // Append for MSQ
-          currentAnswer.push(option_id);
-        } else if (currentAnswer === null) {
-          // Initialize as array for MSQ or single value for MCQ
-          userAnswerMap.set(question_id, {
-            userAnswer: [option_id],
-            markedForReview: marked_for_review || false,
-          });
-        }
-      } else if (fib_answer !== null) {
-        // Store fill-in-the-blank answer as a string
-        userAnswerMap.set(question_id, {
-          userAnswer: fib_answer,
-          markedForReview: marked_for_review || false,
-        });
-      }
+    const reviewMap = new Map();
+    reviewStatuses.forEach((review) => {
+      reviewMap.set(review.question_id, review.marked_for_review);
     });
 
     // Structuring the response
@@ -655,15 +699,28 @@ exports.getTestResult = async (req, res) => {
 
     questions.forEach((question) => {
       const questionData = question.toJSON();
+      const correctAnswers =
+        questionData.options?.flatMap((opt) =>
+          opt.correct_answer ? [opt.id] : []
+        ) || [];
+      const userAnswerData = userAnswerMap.get(questionData.id) || [];
+      const isMarkedForReview = reviewMap.get(questionData.id) || false;
 
-      // Get user's selected answer and mark-for-review status
-      const userAnswerData = userAnswerMap.get(questionData.id) || {
-        userAnswer: null,
-        markedForReview: false,
+      const formattedQuestion = {
+        id: questionData.id,
+        content: questionData.content,
+        content_type: questionData.content_type,
+        marks: questionData.marks,
+        negative_marks: questionData.negative_marks,
+        type: questionData.type,
+        options: questionData.options,
+        explanation: questionData.explanation,
+        correctAnswers: correctAnswers,
+        userAnswer: userAnswerData,
+        markedForReview: isMarkedForReview,
       };
 
       if (questionData.passage_id) {
-        // Passage-Based Question
         if (!passageMap.has(questionData.passage_id)) {
           passageMap.set(questionData.passage_id, {
             passage_id: questionData.passageData.id,
@@ -673,39 +730,27 @@ exports.getTestResult = async (req, res) => {
           });
           structuredQuestions.push(passageMap.get(questionData.passage_id));
         }
-        // Add question inside the passage
-        passageMap.get(questionData.passage_id).questions.push({
-          id: questionData.id,
-          content: questionData.content,
-          content_type: questionData.content_type,
-          marks: questionData.marks,
-          type: questionData.type,
-          options: questionData.options, // Options included inside question
-          explanation: questionData.explanation,
-
-          userAnswer: userAnswerData.userAnswer,
-          markedForReview: userAnswerData.markedForReview,
-        });
+        passageMap
+          .get(questionData.passage_id)
+          .questions.push(formattedQuestion);
       } else {
-        // Standalone Question
-        structuredQuestions.push({
-          id: questionData.id,
-          content: questionData.content,
-          content_type: questionData.content_type,
-          marks: questionData.marks,
-          type: questionData.type,
-          options: questionData.options, // Options included
-          userAnswer: userAnswerData.userAnswer,
-          fib_answer: questionData.fib_answer,
-          explanation: questionData.explanation,
-          markedForReview: userAnswerData.markedForReview,
-        });
+        structuredQuestions.push(formattedQuestion);
       }
     });
 
-    res.status(200).json({ success: true, data: structuredQuestions });
+    res.status(200).json({
+      success: true,
+      data: structuredQuestions,
+      stats: {
+        total_marks: testAttempt.total_marks,
+        marks_gained: testAttempt.marks_gained,
+        attempted_questions: testAttempt.attempted_questions,
+        final_score: testAttempt.final_score,
+        negative_marks: testAttempt.negative_marks,
+      },
+    });
   } catch (error) {
-    console.error("Error fetching test attempt questions:", error);
+    console.error("Error fetching test result:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

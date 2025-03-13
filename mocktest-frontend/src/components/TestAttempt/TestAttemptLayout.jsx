@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import QuestionDisplay from "./QuestionDisplay";
 import QuestionNavigator from "./QuestionNavigator";
+import { useNavigate } from "react-router-dom";
+
 import {
   clearAnswer,
   getTestAttsemptQuestions,
@@ -13,8 +15,10 @@ import Timer from "./Timer";
 
 const TestAttemptLayout = ({ attemptId }) => {
   const [questions, setQuestions] = useState([]);
+  const navigate = useNavigate();
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState({});
+
   const fetchQuestions = async () => {
     try {
       const data = await getTestAttsemptQuestions(attemptId);
@@ -23,50 +27,45 @@ const TestAttemptLayout = ({ attemptId }) => {
       console.error("Error fetching questions:", error);
     }
   };
-  // Fetch Questions
+
   useEffect(() => {
     fetchQuestions();
   }, [attemptId]);
 
-  // Save Answer
   const handleSaveAnswer = async (questionId, answer) => {
     await saveUserAnswer(attemptId, questionId, answer);
     fetchQuestions();
   };
 
-  // Navigation
   const handleQuestionNavigation = (index) => {
     setCurrentQuestionIndex(index);
   };
 
   const handleSubmitTest = async () => {
     await submitTest(attemptId);
-    console.log("test submitted");
+    navigate("/result/" + attemptId);
   };
 
   const handleMarkForReview = async () => {
-    console.log(questions[currentQuestionIndex]);
-    if (questions[currentQuestionIndex].passage_id) {
+    const currentQuestion = questions[currentQuestionIndex];
+
+    if (currentQuestion?.passage_id) {
       await markQuestionForReview(
         attemptId,
-        questions[currentQuestionIndex].questions[0]?.id,
-        !questions[currentQuestionIndex].questions[0]?.markedForReview
+        currentQuestion.questions[0]?.id,
+        !currentQuestion.questions[0]?.markedForReview
       );
     } else {
       await markQuestionForReview(
         attemptId,
-        questions[currentQuestionIndex]?.id,
-        !questions[currentQuestionIndex]?.markedForReview
+        currentQuestion?.id,
+        !currentQuestion?.markedForReview
       );
     }
     fetchQuestions();
   };
 
   const handleClearAnswer = async (questionId) => {
-    // if (questions[currentQuestionIndex].passage_id){
-    //   await clearAnswer(attemptId,questions[currentQuestionIndex].que)
-    // }
-
     await clearAnswer(attemptId, questionId);
     fetchQuestions();
   };
@@ -74,76 +73,97 @@ const TestAttemptLayout = ({ attemptId }) => {
   if (questions.length === 0) return <p>Loading...</p>;
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
-      <Timer attemptId={attemptId} onTimeUp={handleSubmitTest} />
-
+    <div className="container-fluid my-5 mx-auto w-full">
       {/* Main Content */}
-      <div className="flex flex-1">
-        {/* Question Display */}
-        <QuestionDisplay
-          questionData={questions[currentQuestionIndex]}
-          onSaveAnswer={handleSaveAnswer}
-          onClear={handleClearAnswer}
-        />
+      <div className="d-flex justify-content-between gap-3">
+        {/* Left Section - Question Display */}
+        <div className="flex-grow-1">
+          {/* Timer & Marking Info inside Question Display */}
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            {/* Timer on the Left */}
+            <div>
+              <Timer attemptId={attemptId} onTimeUp={handleSubmitTest} />
+            </div>
 
-        {/* Question Navigator */}
+            {/* Mark and Negative Mark on the Right */}
+            <div className="d-flex">
+              <span className="px-3 py-1 text-white rounded-start-pill bg-success d-flex align-items-center gap-1">
+                <i className="bi bi-check"></i> 1
+              </span>
+              <span className="px-3 py-1 text-white rounded-end-pill bg-danger d-flex align-items-center gap-1">
+                <i className="bi bi-x"></i> 0
+              </span>
+            </div>
+          </div>
+
+          {/* Question Display */}
+          <QuestionDisplay
+            questionData={questions[currentQuestionIndex]}
+            onSaveAnswer={handleSaveAnswer}
+            onClear={handleClearAnswer}
+          />
+
+          {/* Fixed Navigation Buttons inside Question Display Column */}
+          <div className="position-fixed bottom-0 start-0 w-100 d-flex justify-content-center">
+            <div className="w-75 bg-white p-3 border-top d-flex justify-content-between">
+              {/* Previous Button (Left-Aligned) */}
+              <button
+                onClick={() =>
+                  handleQuestionNavigation(currentQuestionIndex - 1)
+                }
+                disabled={currentQuestionIndex === 0}
+                className="btn btn-secondary"
+              >
+                Previous
+              </button>
+
+              {/* Mark for Review Button (Centered) */}
+              <button
+                onClick={handleMarkForReview}
+                className="btn btn-warning mx-auto"
+              >
+                {questions[currentQuestionIndex]?.markedForReview
+                  ? "Unmark Review"
+                  : "Mark for Review"}
+              </button>
+
+              {/* Next or Submit Button (Right-Aligned) */}
+              {currentQuestionIndex === questions.length - 1 ? (
+                <SubmitButton
+                  attemptId={attemptId}
+                  onSubmit={handleSubmitTest}
+                />
+              ) : (
+                <button
+                  onClick={() =>
+                    handleQuestionNavigation(currentQuestionIndex + 1)
+                  }
+                  className="btn btn-primary"
+                >
+                  Next
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Section - Question Navigator (Only on Large Screens) */}
+        <div className="d-none d-md-block">
+          <QuestionNavigator
+            questions={questions}
+            currentQuestionIndex={currentQuestionIndex}
+            onNavigate={handleQuestionNavigation}
+          />
+        </div>
+      </div>
+
+      {/* Show Question Navigator in horizontal scroll mode for small screens */}
+      <div className="d-block d-md-none w-100 overflow-auto mt-3">
         <QuestionNavigator
           questions={questions}
           currentQuestionIndex={currentQuestionIndex}
           onNavigate={handleQuestionNavigation}
         />
-      </div>
-
-      {/* Navigation Buttons */}
-      <div className="w-full p-4 bg-white shadow-md flex justify-between items-center">
-        {/* Previous Button */}
-        <button
-          onClick={() => handleQuestionNavigation(currentQuestionIndex - 1)}
-          disabled={currentQuestionIndex === 0}
-          className="px-4 py-2 bg-gray-500 text-white rounded disabled:opacity-50"
-        >
-          Previous
-        </button>
-
-        {/* Mark for Review */}
-        <button
-          onClick={handleMarkForReview}
-          className="px-4 py-2 bg-blue-500 text-white rounded"
-        >
-          {(() => {
-            const currentQuestion = questions[currentQuestionIndex];
-
-            // If it's a passage-based question, check the first question inside
-            if (currentQuestion?.questions) {
-              return currentQuestion.questions[0]?.markedForReview
-                ? "Unmark Review"
-                : "Mark for Review";
-            }
-
-            // If it's a standalone question
-            return currentQuestion?.markedForReview
-              ? "Unmark Review"
-              : "Mark for Review";
-          })()}
-        </button>
-
-        {/* Next / Submit */}
-        {currentQuestionIndex === questions.length - 1 ? (
-          // <button
-          //   onClick={handleSubmitTest}
-          //   className="px-4 py-2 bg-red-500 text-white rounded"
-          // >
-          //   Submit Test
-          // </button>
-          <SubmitButton attemptId={attemptId} onSubmit={handleSubmitTest} />
-        ) : (
-          <button
-            onClick={() => handleQuestionNavigation(currentQuestionIndex + 1)}
-            className="px-4 py-2 bg-green-500 text-white rounded"
-          >
-            Next
-          </button>
-        )}
       </div>
     </div>
   );

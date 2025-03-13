@@ -1,63 +1,64 @@
 import React from "react";
 
 const QuestionNavigator = ({ questions, currentQuestionIndex, onNavigate }) => {
-  // Create a map to track passage-based question status
-  const passageStatus = {};
-  questions.forEach((q) => {
-    if (q.passage_id) {
-      if (!passageStatus[q.passage_id]) {
-        passageStatus[q.passage_id] = { total: 0, answered: 0, marked: false };
-      }
-      passageStatus[q.passage_id].total = q.questions.length;
-
-      q?.questions.forEach((pq) => {
-        if (pq.userAnswer && pq.userAnswer.length > 0) {
-          passageStatus[q.passage_id].answered += 1;
-        }
-      });
-
-      if (q.questions[0]?.markedForReview) {
-        passageStatus[q.passage_id].marked = true;
-      }
-    }
-  });
   return (
-    <div className="w-1/4 p-4 bg-gray-100 shadow-md rounded-lg">
-      <h3 className="text-lg font-semibold text-gray-700 mb-3">Questions</h3>
-      <div className="grid grid-cols-5 gap-2">
+    <div className="p-3 bg-light rounded h-100 d-flex flex-column">
+      <h1 className="mb-3">Question</h1>
+
+      {/* For Large Screens (Grid Layout) */}
+      <div
+        className="d-none d-md-grid gap-2"
+        style={{
+          gridTemplateColumns: "repeat(5, 1fr)",
+          justifyContent: "start",
+          alignItems: "start", // Aligns rows properly
+        }}
+      >
         {questions.map((question, index) => {
-          let bgColor = "bg-gray-400"; // Default: Unanswered
+          let bgColor = "bg-secondary"; // Default: Unanswered
 
-          if (question.passage_id) {
-            // Get passage status
-            const passage = passageStatus[question.passage_id];
-
-            if (passage.marked) {
-              bgColor = "bg-purple-500"; // If any question in the passage is marked for review
-            } else if (passage.answered === passage.total) {
-              bgColor = "bg-green-500"; // All answered ✅
-            } else if (passage.answered > 0) {
-              bgColor = "bg-yellow-500"; // Partially answered 🟡
-            }
-          } else {
-            // Individual question logic
-            if (question.markedForReview) {
-              bgColor = "bg-purple-500"; // Marked for Review 🟣
-            } else if (question.userAnswer && question.userAnswer.length > 0) {
-              bgColor = "bg-green-500"; // Answered ✅
-            }
-          }
-
-          // Highlight current question
-          if (currentQuestionIndex === index) {
-            bgColor = "bg-blue-500 ring-2 ring-blue-600";
-          }
+          if (question.markedForReview) bgColor = "bg-warning";
+          else if (question.userAnswer?.length > 0) bgColor = "bg-success";
+          if (currentQuestionIndex === index) bgColor = "bg-primary text-white";
 
           return (
             <button
               key={index}
               onClick={() => onNavigate(index)}
-              className={`w-10 h-10 flex items-center justify-center text-white font-bold rounded-full transition-all duration-200 ${bgColor}`}
+              className={`btn ${bgColor} text-white d-flex align-items-center justify-content-center`}
+              style={{
+                width: "40px",
+                height: "40px",
+                aspectRatio: "1/1",
+                borderRadius: "50%",
+              }}
+            >
+              {index + 1}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* For Small Screens (Horizontal Scroll) */}
+      <div className="d-md-none d-flex overflow-auto gap-2 py-2 flex-nowrap">
+        {questions.map((question, index) => {
+          let bgColor = "bg-secondary"; // Default: Unanswered
+
+          if (question.markedForReview) bgColor = "bg-warning";
+          else if (question.userAnswer?.length > 0) bgColor = "bg-success";
+          if (currentQuestionIndex === index) bgColor = "bg-primary text-white";
+
+          return (
+            <button
+              key={index}
+              onClick={() => onNavigate(index)}
+              className={`btn ${bgColor} text-white d-flex align-items-center justify-content-center`}
+              style={{
+                width: "40px",
+                height: "40px",
+                aspectRatio: "1/1",
+                borderRadius: "50%",
+              }}
             >
               {index + 1}
             </button>

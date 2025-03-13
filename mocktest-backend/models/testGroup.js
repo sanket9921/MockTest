@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
       },
+      description: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
     },
     {
       tableName: "mock_test_tests_groups",

@@ -19,7 +19,7 @@ const FillBlankForm = ({
 
   const [question, setQuestion] = useState(defaultQuestion);
   const [correctAnswer, setCorrectAnswer] = useState("");
-  const [errors, setErrors] = useState({}); // Error messages
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (selectedQuestion) {
@@ -37,7 +37,6 @@ const FillBlankForm = ({
   const validateForm = () => {
     let errors = {};
 
-    // ✅ Validate Question
     if (!question.content && question.content_type === "text") {
       errors.question = "Question text is required.";
     }
@@ -52,6 +51,7 @@ const FillBlankForm = ({
     setErrors(errors);
     return Object.keys(errors).length === 0;
   };
+
   const resetForm = () => {
     setQuestion(defaultQuestion);
     setCorrectAnswer([]);
@@ -66,7 +66,6 @@ const FillBlankForm = ({
     formData.append("question_type", "fill_in_the_blank");
     formData.append("marks", question.marks);
     formData.append("negativeMark", question.negative_marks);
-
     formData.append("explanation", question.explanation);
 
     if (question.content_type === "text") {
@@ -91,42 +90,49 @@ const FillBlankForm = ({
   };
 
   return (
-    <div className="space-y-4">
-      <QuestionInput question={question} setQuestion={setQuestion} />
-      {errors.question && <p className="text-red-500">{errors.question}</p>}
+    <div className="container p-3">
+      <div className="mb-3">
+        <QuestionInput question={question} setQuestion={setQuestion} />
+        {errors.question && (
+          <div className="text-danger small mt-1">{errors.question}</div>
+        )}
+      </div>
 
-      <input
-        type="text"
-        value={correctAnswer}
-        placeholder="Correct Answer"
-        className="w-full p-2 border"
-        onChange={(e) => setCorrectAnswer(e.target.value)}
-      />
-      {errors.correctAnswer && (
-        <p className="text-red-500">{errors.correctAnswer}</p>
-      )}
+      <div className="mb-3">
+        <label className="form-label">Correct Answer</label>
+        <input
+          type="text"
+          value={correctAnswer}
+          className="form-control"
+          placeholder="Enter correct answer"
+          onChange={(e) => setCorrectAnswer(e.target.value)}
+        />
+        {errors.correctAnswer && (
+          <div className="text-danger small mt-1">{errors.correctAnswer}</div>
+        )}
+      </div>
 
-      <textarea
-        className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        rows="4"
-        value={question.explanation}
-        onChange={handleExplanationChange}
-        placeholder="Enter  explanation..."
-      />
-      <button
-        onClick={handleSubmit}
-        className="p-2 bg-blue-500 text-white rounded"
-      >
-        {selectedQuestion ? "Update" : "Submit"}
-      </button>
-      {selectedQuestion && (
-        <button
-          onClick={resetForm} // Cancel edit mode
-          className="p-2 bg-gray-500 text-white rounded"
-        >
-          Cancel
+      <div className="mb-3">
+        <label className="form-label">Explanation</label>
+        <textarea
+          className="form-control"
+          rows="4"
+          value={question.explanation}
+          onChange={handleExplanationChange}
+          placeholder="Enter explanation..."
+        />
+      </div>
+
+      <div className="d-flex gap-2">
+        <button onClick={handleSubmit} className="btn btn-primary">
+          {selectedQuestion ? "Update" : "Submit"}
         </button>
-      )}
+        {selectedQuestion && (
+          <button onClick={resetForm} className="btn btn-secondary">
+            Cancel
+          </button>
+        )}
+      </div>
     </div>
   );
 };

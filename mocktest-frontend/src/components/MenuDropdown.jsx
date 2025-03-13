@@ -1,13 +1,32 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const MenuDropdown = ({ type, onAction }) => {
   const [open, setOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
 
   const menuItems = {
     question: [
       { label: "Add Option", action: "addOption" },
       { label: "Update Question", action: "updateQuestion" },
       { label: "Update Answers", action: "updateAnswers" },
+      { label: "Update Explanation", action: "updateExplanation" },
       { label: "Delete Question", action: "deleteQuestion", danger: true },
     ],
     option: [
@@ -15,45 +34,49 @@ const MenuDropdown = ({ type, onAction }) => {
       { label: "Delete Option", action: "deleteOption", danger: true },
     ],
     passage: [
-      { label: "Add Question (mcq)", action: "addQuestionMCQ" },
-      { label: "Add Question (msq)", action: "addQuestionMSQ" },
-
+      { label: "Add Question (MCQ)", action: "addQuestionMCQ" },
+      { label: "Add Question (MSQ)", action: "addQuestionMSQ" },
       { label: "Update Passage", action: "updatePassage" },
       { label: "Delete Passage", action: "deletePassage", danger: true },
     ],
     fill: [
+      { label: "Update Question", action: "updateQuestion" },
+
       { label: "Update Text Answers", action: "updateTextAnswers" },
+      { label: "Update Explanation", action: "updateExplanation" },
 
       { label: "Delete Question", action: "deleteQuestion", danger: true },
     ],
   };
 
   return (
-    <div className="relative">
+    <div className="dropdown" ref={dropdownRef}>
+      {/* Three-dot dropdown button */}
       <button
-        onClick={() => setOpen(!open)}
-        className="p-2 rounded-full hover:bg-gray-200"
+        className="btn btn-white border-0"
+        onClick={() => setOpen((prev) => !prev)}
+        aria-expanded={open}
       >
         ⋮
       </button>
 
+      {/* Dropdown menu */}
       {open && (
-        <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg border rounded">
-          {menuItems[type].map((item, index) => (
-            <button
-              key={index}
-              className={`block w-full text-left px-4 py-2 hover:bg-gray-200 ${
-                item.danger ? "text-red-500" : ""
-              }`}
-              onClick={() => {
-                setOpen(false);
-                onAction(item.action);
-              }}
-            >
-              {item.label}
-            </button>
+        <ul className="dropdown-menu show position-absolute end-0 mt-2 shadow-sm">
+          {menuItems[type]?.map((item, index) => (
+            <li key={index}>
+              <button
+                className={`dropdown-item ${item.danger ? "text-danger" : ""}`}
+                onClick={() => {
+                  setOpen(false);
+                  onAction(item.action);
+                }}
+              >
+                {item.label}
+              </button>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );

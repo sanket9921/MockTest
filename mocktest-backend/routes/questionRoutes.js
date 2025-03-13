@@ -33,5 +33,6 @@ router.post(
 );
 
 router.get("/testquestions/:testId", questionController.getQuestionsByTestId);
+router.put("/updateExplanation", questionController.updateExplanation);
 
 module.exports = router;

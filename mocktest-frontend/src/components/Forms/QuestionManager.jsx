@@ -24,7 +24,7 @@ const QuestionManager = ({
     }
   }, [selectedQuestion]);
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className="p-3 bg-light  mx-auto rounded">
       <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="mt-6">
         {activeTab === "mcq" && (

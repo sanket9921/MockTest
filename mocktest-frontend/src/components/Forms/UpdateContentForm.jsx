@@ -30,51 +30,56 @@ const UpdateContentForm = ({ initialData, type, onSubmit }) => {
 
   return (
     <form onSubmit={handleSubmit} className="p-4 bg-white rounded shadow">
-      <label className="block mb-2">Content Type</label>
+      {/* Content Type Selector */}
+      <label className="form-label fw-bold">Content Type</label>
       <select
         name="content_type"
         value={formData.content_type}
         onChange={handleChange}
-        className="border p-2 w-full mb-4"
+        className="form-select mb-3"
       >
         <option value="text">Text</option>
         <option value="image">Image</option>
       </select>
 
+      {/* Content Input */}
       {formData.content_type === "text" ? (
         <textarea
           name="content"
           value={formData.content}
           onChange={handleChange}
-          className="border p-2 w-full mb-4"
+          className="form-control mb-3"
+          rows="3"
+          placeholder="Enter content here..."
         />
       ) : (
         <input
           type="file"
           name="file"
           onChange={handleFileChange}
-          className="mb-4"
+          className="form-control mb-3"
+          accept="image/*"
         />
       )}
 
+      {/* Marks Input (Only for Questions) */}
       {type === "question" && (
         <div>
-          <label className="block mb-2">Marks</label>
+          <label className="form-label fw-bold">Marks</label>
           <input
             type="number"
             name="marks"
             value={formData.marks}
             onChange={handleChange}
-            className="border p-2 w-full mb-4"
+            className="form-control mb-3"
+            placeholder="Enter marks"
           />
         </div>
       )}
 
-      <button
-        type="submit"
-        className="bg-blue-500 text-white px-4 py-2 rounded"
-      >
-        Update
+      {/* Submit Button */}
+      <button type="submit" className="btn btn-primary">
+        <i className="bi bi-arrow-repeat me-2"></i> Update
       </button>
     </form>
   );

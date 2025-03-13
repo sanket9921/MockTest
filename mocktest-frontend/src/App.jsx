@@ -1,11 +1,11 @@
 import { useState } from "react";
 import AppRouter from "./routes";
+import "./styles/global.css"; // Import the global styles
+
 function App() {
   return (
     <>
-      <div className="container mx-auto p-4">
-        <AppRouter />
-      </div>
+      <AppRouter />
     </>
   );
 }

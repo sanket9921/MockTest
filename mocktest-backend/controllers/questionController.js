@@ -8,7 +8,9 @@ const {
 } = require("../services/imageService");
 const { addQuestionService } = require("../services/questionService");
 const { executeTransaction } = require("../utils/dbTransaction");
+
 // Create a new Question
+
 exports.createQuestion = async (req, res) => {
   try {
     const { content, content_type, type, test_id } = req.body;
@@ -248,7 +250,7 @@ exports.addQuestion2 = async (req, res) => {
 exports.getQuestionsByTestId = async (req, res) => {
   try {
     const { testId } = req.params;
-
+    const test = await models.Test.findByPk(testId);
     // Fetch all questions in insertion order
     const questions = await models.Question.findAll({
       where: { test_id: testId },
@@ -302,7 +304,9 @@ exports.getQuestionsByTestId = async (req, res) => {
       }
     });
 
-    res.status(200).json({ success: true, data: structuredQuestions });
+    res
+      .status(200)
+      .json({ success: true, data: structuredQuestions, test: test });
   } catch (error) {
     console.error("Error fetching questions:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
@@ -372,5 +376,33 @@ exports.addPassageWithQuestions = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Failed to add passage with questions", error });
+  }
+};
+
+exports.updateExplanation = async (req, res) => {
+  try {
+    const { questionId, explanation } = req.body;
+
+    // Ensure the explanation is provided
+    if (explanation === undefined) {
+      return res.status(400).json({ message: "Explanation is required" });
+    }
+
+    // Find and update the explanation field
+    const [updatedRows] = await models.Question.update(
+      { explanation },
+      { where: { id: questionId } }
+    );
+
+    if (updatedRows === 0) {
+      return res.status(404).json({ message: "Question not found" });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Explanation updated successfully" });
+  } catch (error) {
+    console.error("Error updating explanation:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };

@@ -2,21 +2,35 @@ import { motion } from "framer-motion";
 
 const ActionModal = ({ data, onClose, children }) => {
   return (
-    <div className="fixed inset-0 bg-[rgba(0,0,0,0.4)] backdrop-blur-md flex items-center justify-center">
+    <div
+      className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center"
+      style={{ backdropFilter: "blur(6px)", zIndex: 1050 }}
+    >
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        className="bg-white p-6 rounded-lg shadow-lg w-96"
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -50 }}
+        className="bg-white rounded shadow-lg d-flex flex-column"
+        style={{
+          width: "95%", // Almost full width on mobile
+          maxWidth: "500px", // Controlled width on larger screens
+          maxHeight: "90vh", // Prevent overflow
+        }}
       >
-        <h2 className="text-lg font-semibold capitalize">
-          {data.action.replace(/([A-Z])/g, " $1")}
-        </h2>
-        <div className="mt-4">{children}</div>
-        <div className="flex justify-end mt-4">
-          <button className="px-4 py-2 bg-gray-300 rounded" onClick={onClose}>
-            Close
-          </button>
+        {/* Modal Header */}
+        <div className="d-flex justify-content-between align-items-center p-3 border-bottom">
+          <h5 className="m-0 text-capitalize">
+            {data.action.replace(/([A-Z])/g, " $1")}
+          </h5>
+          <button className="btn-close" onClick={onClose}></button>
+        </div>
+
+        {/* Modal Body with Scroll */}
+        <div
+          className="flex-grow-1 p-3 overflow-auto"
+          style={{ maxHeight: "75vh", overflowY: "auto" }}
+        >
+          {children}
         </div>
       </motion.div>
     </div>

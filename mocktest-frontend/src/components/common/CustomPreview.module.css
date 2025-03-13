@@ -1,0 +1,17 @@
+.customPreview {
+  /* Add your custom styles here */
+}
+
+.customPreview ul {
+  list-style-type: disc;
+  padding-left: 2rem;
+}
+
+.customPreview ol {
+  list-style-type: decimal;
+  padding-left: 2rem;
+}
+
+.customPreview p {
+  margin-bottom: 1rem;
+}

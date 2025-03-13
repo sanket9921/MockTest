@@ -1,54 +1,81 @@
-import {
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
-} from "@headlessui/react";
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
+import { useState } from "react";
 import MenuDropdown from "./MenuDropdown";
 import OptionItem from "./OptionItem";
 
-const QuestionItem = ({ question, onAction }) => {
-  return (
-    <Disclosure>
-      {({ open }) => (
-        <>
-          <DisclosureButton className="w-full p-3 text-left bg-gray-200 flex justify-between items-center">
-            <span>
-              {question.content_type === "image" ? (
-                <img src={question.content} alt="Question" />
-              ) : (
-                question.content
-              )}
-            </span>
-            <div className="flex items-center">
-              <MenuDropdown
-                type={
-                  question.type === "fill_in_the_blank" ? "fill" : "question"
-                }
-                onAction={(action) => onAction(action, question)}
-              />
-              <ChevronDownIcon
-                className={`h-5 w-5 transform ${open ? "rotate-180" : ""}`}
-              />
-            </div>
-          </DisclosureButton>
+const QuestionItem = ({ question, onAction, parentAccordion, index }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const questionId = `questionCollapse${
+    parentAccordion ? parentAccordion : "main"
+  }-${index}`;
+  const questionParent = parentAccordion
+    ? `#${parentAccordion}`
+    : "#questionAccordion";
 
-          <DisclosurePanel className="p-3 bg-white">
-            {question.type === "fill_in_the_blank" ? (
-              <div className="p-2 border rounded flex justify-between items-center bg-green-200">
-                {question.fib_answer.correctTextAnswer}
-              </div>
+  return (
+    <div className="accordion-item">
+      {/* Accordion Header (Custom) */}
+      <h2 className="accordion-header">
+        <div
+          className="d-flex w-100 justify-content-between align-items-center p-3"
+          data-bs-toggle="collapse"
+          data-bs-target={`#${questionId}`}
+          onClick={() => setIsOpen(!isOpen)}
+          style={{ cursor: "pointer" }} // Cursor for better UX
+        >
+          {/* Question Content */}
+          <span>
+            {question.content_type === "image" ? (
+              <img
+                src={question.content}
+                alt="Question"
+                className="img-fluid"
+                style={{ maxHeight: "50px" }}
+              />
             ) : (
-              question.options.map((option, index) => (
-                <OptionItem key={index} option={option} onAction={onAction} />
-              ))
+              <p
+                className="mb-0"
+                dangerouslySetInnerHTML={{ __html: question?.content }}
+              />
             )}
-            <h3>Explanation:</h3>
-            {question.explanation}
-          </DisclosurePanel>
-        </>
-      )}
-    </Disclosure>
+          </span>
+
+          {/* Float MenuDropdown to the Right */}
+          <div className="ms-auto d-flex align-items-center">
+            <MenuDropdown
+              type={question.type === "fill_in_the_blank" ? "fill" : "question"}
+              onAction={(action) => onAction(action, question)}
+            />
+          </div>
+        </div>
+      </h2>
+
+      {/* Accordion Body */}
+      <div
+        id={questionId}
+        className="accordion-collapse collapse"
+        data-bs-parent={questionParent}
+      >
+        <div className="accordion-body">
+          {question.type === "fill_in_the_blank" ? (
+            <div className="text-muted">
+              {question.fib_answer.correctTextAnswer}
+            </div>
+          ) : (
+            question.options.map((option, idx) => (
+              <div key={idx} className="mb-2">
+                <OptionItem option={option} onAction={onAction} />
+              </div>
+            ))
+          )}
+          <h6 className="mt-3">Explanation:</h6>
+          <p
+            className="mb-0"
+            dangerouslySetInnerHTML={{ __html: question.explanation }}
+          />
+          {/* <p>{question.explanation}</p> */}
+        </div>
+      </div>
+    </div>
   );
 };
 

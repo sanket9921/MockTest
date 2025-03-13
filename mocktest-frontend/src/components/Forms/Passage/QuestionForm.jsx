@@ -7,15 +7,6 @@ const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
     });
   };
 
-  const toggleOptionType = (index) => {
-    const updatedOptions = question.options.map((opt, i) =>
-      i === index
-        ? { ...opt, contentType: opt.contentType === "text" ? "image" : "text" }
-        : opt
-    );
-    updateQuestion(question.id, { options: updatedOptions });
-  };
-
   const updateOption = (index, value) => {
     const updatedOptions = question.options.map((opt, i) =>
       i === index ? { ...opt, content: value } : opt
@@ -49,24 +40,21 @@ const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
     const updatedOptions = question.options.filter((_, i) => i !== index);
     updateQuestion(question.id, { options: updatedOptions });
   };
-  const handleExplanationChange = (e) => {
-    setQuestion((prevQuestion) => ({
-      ...prevQuestion,
-      explanation: e.target.value,
-    }));
-  };
+
   return (
-    <div className="p-4 bg-white shadow-md rounded mb-4">
+    <div className="p-3 bg-white shadow-sm rounded mb-3 border">
+      {/* Toggle Question Type */}
       <button
         onClick={toggleQuestionType}
-        className="mb-2 px-4 py-2 bg-blue-500 text-white rounded"
+        className="btn btn-secondary mb-2 d-flex align-items-center"
       >
-        Switch to {question.contentType === "text" ? "Image" : "Text"}
+        {question.contentType === "text" ? "Image" : "Text"}
       </button>
 
+      {/* Question Input */}
       {question.contentType === "text" ? (
         <input
-          className="w-full p-2 border"
+          className="form-control mb-2"
           value={question.content}
           onChange={(e) =>
             updateQuestion(question.id, { content: e.target.value })
@@ -76,66 +64,71 @@ const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
       ) : (
         <input
           type="file"
+          className="form-control mb-2"
           onChange={(e) =>
             updateQuestion(question.id, { content: e.target.files[0] })
           }
         />
       )}
 
+      {/* Marks Input */}
       <input
-        className="w-full p-2 border mt-2"
+        className="form-control mb-2"
         type="number"
         placeholder="Marks"
         value={question.marks}
         onChange={(e) => updateQuestion(question.id, { marks: e.target.value })}
       />
 
-      <input
-        className="w-full p-2 border mt-2"
-        type="number"
-        placeholder="Negative Marks (optional)"
-        value={question.negative_marks}
-        onChange={(e) =>
-          updateQuestion(question.id, { negative_marks: e.target.value })
-        }
-      />
-
+      {/* Options Section */}
       {question.options.map((opt, index) => (
-        <div key={index} className="flex items-center gap-2 mt-2">
+        <div key={index} className="d-flex align-items-center gap-2 mb-2">
           <input
             type={question.type === "MCQ" ? "radio" : "checkbox"}
             checked={opt.isCorrect}
             onChange={() => toggleCorrectAnswer(index)}
+            className="form-check-input"
           />
           <input
-            className="p-2 border w-full"
+            className="form-control"
             value={opt.content}
             onChange={(e) => updateOption(index, e.target.value)}
+            placeholder="Option content"
           />
-          <button onClick={() => removeOption(index)}>❌</button>
+          <div
+            className="text-danger text-bold"
+            onClick={() => removeOption(index)}
+          >
+            <i className="bi bi-x-lg"></i> {/* Bootstrap Trash Icon */}
+          </div>
         </div>
       ))}
 
+      {/* Add Option Button */}
       <button
         onClick={addOption}
-        className="mt-2 px-4 py-2 bg-green-500 text-white rounded"
+        className="btn btn-success d-flex align-items-center mb-2"
       >
-        Add Option
+        <i className="bi bi-plus-circle me-2"></i> Add Option
       </button>
+
+      {/* Explanation Input */}
       <textarea
-        className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        rows="4"
+        className="form-control mb-2"
+        rows="3"
         value={question.explanation}
         onChange={(e) =>
           updateQuestion(question.id, { explanation: e.target.value })
         }
-        placeholder="Enter  explanation..."
+        placeholder="Enter explanation..."
       />
+
+      {/* Remove Question Button */}
       <button
         onClick={() => removeQuestion(question.id)}
-        className="mt-2 px-4 py-2 bg-red-500 text-white rounded"
+        className="btn btn-danger d-flex align-items-center"
       >
-        Remove Question
+        <i className="bi bi-trash me-2"></i> Remove Question
       </button>
     </div>
   );

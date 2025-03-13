@@ -26,3 +26,10 @@ export const submitPassageWithQuestions = async (formData) => {
     headers: { "Content-Type": "multipart/form-data" },
   });
 };
+
+export const updateExplanation = async (questionId, explanation) => {
+  return await API.put(`/questions/updateExplanation`, {
+    questionId,
+    explanation,
+  });
+};

@@ -1,0 +1,25 @@
+:root {
+    /* Primary Colors */
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+    --primary-span-color:#86A1AE;
+  
+    /* Background Colors */
+    --light-bg: #f8f9fa;
+    --dark-bg: #343a40;
+  
+    /* Text Colors */
+    --text-color-primary: #424242;
+    --text-color-secondary: #6c757d;
+    --tertiary-text-color: #86A1AE;
+    /* Fonts */
+    --primary-font:  "Red Hat Display", sans-serif;
+    --secondary-font: 'Red Hat Display', sans-serif;
+
+    --bg-image: "./src/assets/bg-dashboard.svg"
+  }
+

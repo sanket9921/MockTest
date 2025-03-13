@@ -59,64 +59,9 @@ const TestAttemptPage = () => {
   };
 
   return (
-    <motion.div className="min-h-screen flex flex-col bg-blue-50 p-6">
-      {/* Timer (If applicable) */}
-      <div className="text-center text-lg font-semibold text-blue-600">
-        Time Remaining: 20:30
-      </div>
-
+    <div className="container">
       <TestAttemptLayout attemptId={attemptId} />
-
-      {/* Question Card */}
-      {/* {question && (
-        <QuestionCard
-          question={question}
-          selectedAnswer={selectedAnswer}
-          onAnswerChange={handleAnswerChange}
-        />
-      )} */}
-
-      {/* Navigation */}
-      {/* <div className="flex justify-between mt-4">
-        <button
-          className={`px-4 py-2 rounded ${
-            currentPage > 1
-              ? "bg-blue-500 text-white"
-              : "bg-gray-300 cursor-not-allowed"
-          }`}
-          disabled={currentPage === 1}
-          onClick={() => handleNavigation(currentPage - 1)}
-        >
-          Back
-        </button>
-        <button
-          className={`px-4 py-2 rounded ${
-            markedForReview ? "bg-blue-500 text-white" : "bg-gray-300"
-          }`}
-          onClick={() => handleMarkForReview(question.id)}
-        >
-          {markedForReview ? "Unmark Review" : "Mark for Review"}
-        </button>
-
-        {currentPage < totalPages ? (
-          <button
-            className="px-4 py-2 rounded bg-blue-500 text-white"
-            onClick={() => handleNavigation(currentPage + 1)}
-          >
-            Next
-          </button>
-        ) : (
-          <SubmitButton attemptId={attemptId} onSubmit={handleSubmit} />
-        )}
-      </div> */}
-
-      {/* Question Navigation */}
-      {/* <QuestionNavigation
-        totalPages={totalPages}
-        currentPage={currentPage}
-        onNavigate={handleNavigation}
-      /> */}
-    </motion.div>
+    </div>
   );
 };
 

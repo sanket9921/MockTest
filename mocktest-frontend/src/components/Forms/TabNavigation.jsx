@@ -7,19 +7,20 @@ const TabNavigation = ({ activeTab, setActiveTab }) => {
   ];
 
   return (
-    <div className="flex space-x-4 border-b">
+    <ul className="nav nav-tabs border-bottom ">
       {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          className={`py-2 px-4 ${
-            activeTab === tab.id ? "border-b-2 border-blue-500 font-bold" : ""
-          }`}
-          onClick={() => setActiveTab(tab.id)}
-        >
-          {tab.label}
-        </button>
+        <li className="nav-item" key={tab.id}>
+          <button
+            className={`nav-link text-dark ${
+              activeTab === tab.id ? "fw-bold border-bottom-2" : ""
+            }`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 };
 

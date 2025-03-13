@@ -16,7 +16,31 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: "in_progress",
       },
-      total_score: {
+      total_marks: {
+        // Total possible marks in the test
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      marks_gained: {
+        // Marks obtained by the user
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      negative_marks: {
+        // Negative marks deducted for incorrect answers
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      final_score: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      attempted_questions: {
+        // Number of questions the user attempted
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 0,

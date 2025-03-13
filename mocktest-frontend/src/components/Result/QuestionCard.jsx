@@ -14,40 +14,37 @@ const QuestionCard = ({ question }) => {
   } = question;
 
   return (
-    <motion.div
-      className="border p-4 rounded-lg shadow-md"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-    >
+    <div className="border p-4 rounded shadow-sm bg-white">
       {/* Question Content */}
       {content_type === "image" ? (
         <img
           src={content}
           alt="Question"
-          className="w-full max-w-md mx-auto rounded"
+          className="w-100 rounded d-block mx-auto"
+          style={{ maxWidth: "400px" }}
         />
       ) : (
-        <h4 className="font-semibold">
-          {content} <span className="text-gray-500">({marks} Marks)</span>
+        <h4 className="fw-semibold">
+          {content} <span className="text-muted">({marks} Marks)</span>
         </h4>
       )}
 
       {/* Marked for Review */}
       {markedForReview && (
-        <p className="text-yellow-500 font-semibold">⚠ Marked for Review</p>
+        <p className="text-warning fw-semibold mt-2">⚠ Marked for Review</p>
       )}
 
       {/* Fill in the Blank Question Handling */}
       {type === "fill_in_the_blank" && fib_answer ? (
         <div className="mt-3">
           {userAnswer === fib_answer.correctTextAnswer.replace(/"/g, "") ? (
-            <p className="p-2 rounded bg-green-200">{userAnswer}</p>
+            <p className="p-2 rounded bg-success text-white">{userAnswer}</p>
           ) : (
             <>
-              <p className="p-2 rounded bg-red-200">
+              <p className="p-2 rounded bg-danger text-white">
                 Your Answer: {userAnswer}
               </p>
-              <p className="p-2 rounded bg-green-200">
+              <p className="p-2 rounded bg-success text-white">
                 Correct Answer: {fib_answer.correctTextAnswer.replace(/"/g, "")}
               </p>
             </>
@@ -55,26 +52,25 @@ const QuestionCard = ({ question }) => {
         </div>
       ) : (
         /* Multiple Choice / Single Choice Question Handling */
-        <div className="mt-3 space-y-2">
+        <div className="mt-3">
           {options.map((option) => {
             const isCorrect = option.correct_answer !== null;
             const isUserSelected = userAnswer?.includes(option.id);
             const isIncorrect = isUserSelected && !isCorrect;
 
             return (
-              <motion.div
+              <div
                 key={option.id}
                 className={`p-2 rounded ${
                   isCorrect
-                    ? "bg-green-200"
+                    ? "bg-success text-white"
                     : isIncorrect
-                    ? "bg-red-200"
-                    : "bg-gray-100"
+                    ? "bg-danger text-white"
+                    : "bg-light"
                 }`}
-                whileHover={{ scale: 1.02 }}
               >
                 {option.content}
-              </motion.div>
+              </div>
             );
           })}
         </div>
@@ -82,11 +78,11 @@ const QuestionCard = ({ question }) => {
 
       {/* Explanation */}
       {explanation && (
-        <p className="mt-3 text-gray-700">
+        <p className="mt-3 text-muted">
           <strong>Explanation:</strong> {explanation}
         </p>
       )}
-    </motion.div>
+    </div>
   );
 };
 

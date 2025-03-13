@@ -49,13 +49,13 @@ const AddOptionForm = ({ data, onClose }) => {
   return (
     <div>
       {/* Show Question Content */}
-      <div className="mb-4 border p-3 rounded bg-gray-100">
+      <div className="mb-3 border p-3 rounded bg-light">
         <strong>Question:</strong>
         {data.content_type === "image" ? (
           <img
             src={data.content}
             alt="Question"
-            className="w-full mt-2 rounded"
+            className="w-100 mt-2 rounded"
           />
         ) : (
           <p className="mt-2">{data.content}</p>
@@ -63,12 +63,12 @@ const AddOptionForm = ({ data, onClose }) => {
       </div>
 
       {/* Option Type Selector */}
-      <div className="mb-4">
-        <label className="font-medium">Option Type:</label>
+      <div className="mb-3">
+        <label className="form-label fw-bold">Option Type:</label>
         <select
           value={optionType}
           onChange={(e) => setOptionType(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="form-select"
         >
           <option value="text">Text</option>
           <option value="image">Image</option>
@@ -82,25 +82,32 @@ const AddOptionForm = ({ data, onClose }) => {
           placeholder="Enter option text"
           value={optionValue}
           onChange={(e) => setOptionValue(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="form-control mb-3"
         />
       ) : (
         <input
           type="file"
           accept="image/*"
           onChange={(e) => setOptionFile(e.target.files[0])}
-          className="w-full p-2 border rounded"
+          className="form-control mb-3"
         />
       )}
 
+      {/* Submit Button */}
       <button
         onClick={handleSubmit}
         disabled={isSubmitting}
-        className={`px-4 py-2 text-white rounded ${
-          isSubmitting ? "bg-gray-400" : "bg-blue-500"
-        }`}
+        className={`btn ${isSubmitting ? "btn-secondary" : "btn-primary"}`}
       >
-        {isSubmitting ? "Adding..." : "Add"}
+        {isSubmitting ? (
+          <>
+            <i className="bi bi-hourglass-split me-2"></i> Adding...
+          </>
+        ) : (
+          <>
+            <i className="bi bi-plus-lg me-2"></i> Add
+          </>
+        )}
       </button>
     </div>
   );

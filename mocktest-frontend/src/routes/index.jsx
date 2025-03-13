@@ -7,7 +7,7 @@ import TestsList from "../pages/TestsList";
 import RulesPage from "../pages/RulesPage";
 import TestAttemptPage from "../pages/TestAttemptPage";
 import ResultPage from "../pages/ResultPage";
-
+import RichTextEditor from "../components/common/RichTextEditor";
 const AppRouter = () => {
   return (
     <Router>
@@ -22,6 +22,7 @@ const AppRouter = () => {
 
         <Route path="/addquestions/:testid" element={<AddQuestion />} />
         <Route path="/result/:attemptId" element={<ResultPage />} />
+        <Route path="/richtexteditor" element={<RichTextEditor />} />
       </Routes>
     </Router>
   );

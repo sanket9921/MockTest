@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import QuestionList from "../components/Result/QuestionList";
 import { getResult } from "../services/testAttemptService";
+import StatsSummary from "../components/Result/StatsSummary";
+import Navbar from "../components/Header";
 
 const ResultPage = () => {
   const { attemptId } = useParams();
@@ -13,7 +15,7 @@ const ResultPage = () => {
     const fetchResult = async () => {
       try {
         const response = await getResult(attemptId);
-        setResultData(response.data);
+        setResultData(response);
       } catch (error) {
         console.error("Error fetching result:", error);
       } finally {
@@ -24,29 +26,23 @@ const ResultPage = () => {
   }, [attemptId]);
 
   if (loading) return <p className="text-center text-lg">Loading...</p>;
-
   if (!resultData)
     return <p className="text-center text-red-500">No data found.</p>;
-
+  console.log(resultData);
   return (
-    <div className="container mx-auto p-6">
-      {/* Score Summary */}
-      <motion.div
-        className="bg-gray-100 p-6 rounded-lg shadow-md text-center mb-6"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <h2 className="text-2xl font-bold">Test Result</h2>
-        {/* <p className="text-lg">
-          Score: {userScore} / {totalMarks}
-        </p>
-        <p className="text-lg">
-          Correct Answers: {correctAnswers} / {totalQuestions}
-        </p> */}
-      </motion.div>
+    <div className="container mx-auto p-6 my-3">
+      <Navbar />
+
+      {/* Test Result Header */}
+      <div className="m-6 p-6">
+        <h2 className="text-dark m-6 p-6">Test Result</h2>
+      </div>
+
+      {/* Stats Summary */}
+      <StatsSummary stats={resultData.stats} className="my-5" />
 
       {/* Questions List */}
-      <QuestionList questions={resultData} />
+      <QuestionList questions={resultData.data} />
     </div>
   );
 };

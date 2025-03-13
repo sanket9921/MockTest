@@ -3,15 +3,20 @@ import MenuDropdown from "./MenuDropdown";
 const OptionItem = ({ option, onAction }) => {
   return (
     <div
-      className={`p-2 border rounded flex justify-between items-center ${
-        option.correct_answer ? "bg-green-200" : ""
+      className={`d-flex justify-content-between align-items-center border p-2 rounded ${
+        option.correct_answer ? "bg-success bg-opacity-25" : ""
       }`}
     >
       <span>
         {option.content_type === "image" ? (
-          <img src={option.content} alt="Option" className="w-24 h-24" />
+          <img
+            src={option.content}
+            alt="Option"
+            className="img-thumbnail"
+            style={{ width: "80px", height: "80px" }}
+          />
         ) : (
-          option.content
+          <span>{option.content}</span>
         )}
       </span>
       <MenuDropdown

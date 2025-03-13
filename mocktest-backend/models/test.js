@@ -21,6 +21,15 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: 0,
       },
+      difficulty: {
+        type: DataTypes.ENUM("Easy", "Medium", "Hard"),
+        allowNull: false,
+      },
+      negative: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 0,
+      },
     },
     {
       tableName: "mock_test_tests",

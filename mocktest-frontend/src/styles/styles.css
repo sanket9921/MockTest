@@ -1,0 +1,9 @@
+.question-container {
+    max-width: 800px; /* Adjust as needed */
+    min-height: 100vh; /* Full screen height */
+    margin: 0 auto; /* Center horizontally */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center content vertically */
+  }
+  

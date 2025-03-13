@@ -3,6 +3,7 @@ import QuestionList from "../components/QuestionList";
 import { useEffect, useState } from "react";
 import { fetchQuestionsByTestId } from "../services/questionService";
 import QuestionManager from "../components/Forms/QuestionManager";
+import Navbar from "../components/Header";
 
 const AddQuestion = () => {
   const { testid } = useParams();
@@ -21,19 +22,27 @@ const AddQuestion = () => {
   };
 
   return (
-    <div className="container flex">
-      <QuestionList
-        questions={questions}
-        selectedQuestion={selectedQuestion}
-        setSelectedQuestion={setSelectedQuestion}
-        refreshQuestions={refreshQuestions}
-      />
-      <QuestionManager
-        testId={parseInt(testid)}
-        selectedQuestion={selectedQuestion}
-        setSelectedQuestion={setSelectedQuestion}
-        refreshQuestions={refreshQuestions}
-      />
+    <div className="container-fluid">
+      <div className="my-3">
+        <Navbar />
+      </div>
+      <div className="row">
+        {/* Left Column - Question List (50%) */}
+        <div className="col-md-6">
+          <QuestionList
+            questions={questions}
+            refreshQuestions={refreshQuestions}
+          />
+        </div>
+
+        {/* Right Column - Question Manager (50%) */}
+        <div className="col-md-6">
+          <QuestionManager
+            testId={parseInt(testid)}
+            refreshQuestions={refreshQuestions}
+          />
+        </div>
+      </div>
     </div>
   );
 };

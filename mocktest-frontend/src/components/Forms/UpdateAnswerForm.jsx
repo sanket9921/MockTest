@@ -1,5 +1,4 @@
 import { useState } from "react";
-import axios from "axios";
 import { updateAnswers } from "../../services/answersService";
 
 const UpdateAnswerForm = ({ data, onClose }) => {
@@ -32,66 +31,66 @@ const UpdateAnswerForm = ({ data, onClose }) => {
   const handleSaveChanges = async () => {
     try {
       const correct_answers = Array.from(selectedOptions);
-      // await axios.post("/api/questions/update-correct-option", payload);
       await updateAnswers(questionId, correct_answers);
-      // alert("Correct options updated successfully!");
       onClose();
     } catch (error) {
       console.error("Error updating correct options:", error);
-      // alert("Failed to update options.");
     }
   };
 
   return (
-    <div>
+    <div className="p-3 bg-white rounded shadow">
       {/* Question */}
-      <div className="mb-4 text-lg font-semibold">
+      <div className="mb-3">
+        <h5 className="fw-bold">Question:</h5>
         {content_type === "text" ? (
-          <p>{content}</p>
+          <p className="border p-2 rounded bg-light">{content}</p>
         ) : (
-          <img
-            src={content}
-            alt="Question"
-            className="w-full h-40 object-contain"
-          />
+          <img src={content} alt="Question" className="img-fluid rounded" />
         )}
       </div>
 
       {/* Options */}
-      <div className="space-y-3">
+      <div className="mb-3">
+        <h6 className="fw-bold">Select Correct Option(s):</h6>
         {options.map((option) => (
-          <label
-            key={option.id}
-            className={`flex items-center gap-2 p-2 border rounded cursor-pointer ${
-              selectedOptions.has(option.id) ? "bg-green-100" : ""
-            }`}
-          >
+          <div key={option.id} className="form-check">
             <input
+              className="form-check-input"
               type={type === "single_choice" ? "radio" : "checkbox"}
               name="correct-option"
               checked={selectedOptions.has(option.id)}
               onChange={() => handleOptionChange(option.id)}
-              className="accent-blue-500"
+              id={`option-${option.id}`}
             />
-            {option.content_type === "text" ? (
-              <span>{option.content}</span>
-            ) : (
-              <img
-                src={option.content}
-                alt="Option"
-                className="w-10 h-10 object-contain"
-              />
-            )}
-          </label>
+            <label
+              className={`form-check-label ${
+                selectedOptions.has(option.id) ? "fw-bold text-success" : ""
+              }`}
+              htmlFor={`option-${option.id}`}
+            >
+              {option.content_type === "text" ? (
+                option.content
+              ) : (
+                <img
+                  src={option.content}
+                  alt="Option"
+                  className="img-thumbnail"
+                  style={{
+                    width: "50px",
+                    height: "50px",
+                    objectFit: "contain",
+                  }}
+                />
+              )}
+            </label>
+          </div>
         ))}
       </div>
 
       {/* Save Changes Button */}
-      <button
-        onClick={handleSaveChanges}
-        className="mt-4 w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-      >
-        Save Correct Option
+      <button onClick={handleSaveChanges} className="btn btn-primary w-100">
+        <i className="bi bi-check-circle me-2"></i> Save Correct Option
       </button>
     </div>
   );

@@ -1,0 +1,174 @@
+@import "./variables.css";
+
+/* Global Styles for Typography */
+body {
+  font-family: var(--primary-font);
+  position: relative;
+  background-color: var(--light-bg);
+  margin: 0;
+  padding: 0;
+}
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("../assets/bg-dashboard.svg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.5; /* Adjust opacity (0 = fully transparent, 1 = fully visible) */
+  z-index: -1; /* Keeps it behind other content */
+}
+/* Headings */
+h1 {
+  font-size: 32px;
+  font-weight: 700;
+  font-family: var(--primary-font);
+    color: var(--text-color-primary);
+}
+
+h2 {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-color-primary);
+}
+
+h3 {
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--text-color-primary);
+}
+
+h4 {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text-color-primary);
+
+}
+
+h5 {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+h6 {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Paragraphs */
+p {
+  font-size: 18px;
+  color: var(--text-color-secondary);
+}
+
+/* Links */
+a {
+  text-decoration: none;
+  color: var(--link-color);
+  transition: color 0.3s ease-in-out;
+}
+
+a:hover {
+  color: var(--primary-color);
+}
+
+
+/* Buttons */
+button {
+  padding: 10px 16px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+button.primary {
+  background-color: var(--primary-color);
+  color: white;
+  width: 100%;
+}
+
+button.primary:hover {
+  background-color: darken(var(--primary-color), 10%);
+}
+
+button.secondary {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+button.secondary:hover {
+  background-color: darken(var(--secondary-color), 10%);
+}
+
+/* Input Fields */
+input, textarea {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid var(--secondary-color);
+  border-radius: 5px;
+  outline: none;
+}
+
+input:focus, textarea:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.custom-border {
+    position: relative;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 10px; /* Ensures rounded corners */
+    overflow: hidden; /* Clips background overflow */
+  }
+  
+  /* Add pseudo-element for gradient border */
+  .custom-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px; /* Border thickness */
+    border-radius: 10px; /* Same as parent */
+    background: linear-gradient(102.85deg, rgba(53, 115, 235, 0.4) 0%, rgba(49, 116, 245, 0) 60.8%, rgba(45, 117, 255, 0.4) 116.28%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    z-index: 0;
+  }
+  
+  .custom-border > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .text-tertiary {
+    font-size: 14px;
+    color: var(--tertiary-text-color);
+  }
+
+  .bg-purple {
+    background-color: #6f42c1 !important; /* Bootstrap's purple */
+  }
+
+
+  .question-container {
+    /* max-width: 800px; Adjust as needed */
+    min-height: 70vh; /* Full screen height */
+    margin: 0 auto; /* Center horizontally */
+    display: flex;
+    /* flex-direction: column;
+    justify-content: center; Center content vertically */
+  }
+  
+  .hover-bold:hover {
+    font-weight: bold;
+  }
+  

@@ -2,18 +2,21 @@ import React from "react";
 
 const FillInTheBlank = ({ question, onSaveAnswer, onClear }) => {
   return (
-    <div className="mt-4">
-      <h2 className="text-lg font-semibold text-gray-800">
-        {question.content}
-      </h2>
+    <div className="mt-3 z-0 w-100">
+      <h5 className="mb-2">{question.content}</h5>
       <input
         type="text"
-        className="w-full p-2 mt-2 border rounded-lg focus:ring focus:ring-blue-300"
+        className="form-control w-100 mb-2"
         placeholder="Enter your answer"
         value={question.userAnswer || ""}
         onChange={(e) => onSaveAnswer(question.id, e.target.value)}
       />
-      <button onClick={() => onClear(question.id)}>clear</button>
+      <button
+        className="btn btn-secondary btn-sm"
+        onClick={() => onClear(question.id)}
+      >
+        Clear
+      </button>
     </div>
   );
 };

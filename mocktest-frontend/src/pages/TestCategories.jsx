@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { fetchTestGroups } from "../services/testGroupService";
 
 const TestCategories = () => {
@@ -18,30 +17,55 @@ const TestCategories = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-blue-50 p-6">
-      <h1 className="text-3xl font-bold text-center text-blue-700 mb-6">
-        Choose a Test Category
-      </h1>
+    <div className="container-fluid px-0 mt-4">
+      <div className="px-2">
+        <h1 className="mb-2">Mock Test</h1>
+        <p className="mb-3">
+          Mock test is a practice exam designed to simulate the format, timing,
+          and difficulty of a real test.
+        </p>
 
-      {loading ? (
-        <p className="text-center text-blue-500">Loading categories...</p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {categories.map((category) => (
-            <motion.div
-              key={category.id}
-              className="p-6 bg-white rounded-lg shadow-lg cursor-pointer text-center border border-blue-300"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate(`/testslist/${category.id}`)}
-            >
-              <h2 className="text-xl font-semibold text-blue-800">
-                {category.name}
-              </h2>
-            </motion.div>
-          ))}
-        </div>
-      )}
+        {loading ? (
+          <p className="text-center text-primary">Loading categories...</p>
+        ) : (
+          <div className="custom-border rounded p-3">
+            <h2 className="m-3">
+              Live Tests & <span className="text-primary">Free</span> Quizzes
+            </h2>
+            <div className="row g-2 p-2">
+              {categories.map((category) => (
+                <div key={category.id} className="col-12 col-sm-6 col-md-4 p-2">
+                  <div
+                    className="custom-border p-3 shadow-sm h-100 d-flex flex-column"
+                    style={{ height: "163px" }}
+                  >
+                    <h3 className="mb-2">
+                      {category.name.length > 18
+                        ? category.name.substring(0, 18) + "..."
+                        : category.name}
+                    </h3>
+                    <span className="text-tertiary d-block mb-2 flex-grow-1">
+                      {category.description}
+                    </span>
+                    <div className="d-flex justify-content-between align-items-center">
+                      <span className="text-tertiary">
+                        <i className="bi bi-card-checklist me-1"></i>
+                        {category.testCount} Test
+                      </span>
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => navigate(`/testslist/${category.id}`)}
+                      >
+                        View Tests
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -13,9 +13,8 @@ const OptionInput = ({
     option.content_type === "text"
   );
 
-  // Handle text input change
+  // ✅ Handle text input change
   const handleTextChange = (e) => {
-    //  Adding a new option
     const updatedOptions = [...options];
     updatedOptions[index] = {
       ...option,
@@ -26,11 +25,10 @@ const OptionInput = ({
     setOptions(updatedOptions);
   };
 
-  // Handle image file selection
+  // ✅ Handle image file selection
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      //  Adding a new option
       const updatedOptions = [...options];
       updatedOptions[index] = {
         ...option,
@@ -41,14 +39,14 @@ const OptionInput = ({
       setOptions(updatedOptions);
     }
   };
-  // Handle selection of correct answers
+
+  // ✅ Handle selection of correct answers
   const handleCorrectAnswerChange = () => {
-    console.log(index);
     if (type === "radio") {
-      //  MCQ (Single Answer)
+      // MCQ (Single Answer)
       setCorrectAnswers([index]); // Only store one correct answer
     } else {
-      //  MSQ (Multiple Answers)
+      // MSQ (Multiple Answers)
       setCorrectAnswers((prev) => {
         const updatedAnswers = Array.isArray(prev) ? [...prev] : [];
         return updatedAnswers.includes(index)
@@ -58,12 +56,13 @@ const OptionInput = ({
     }
   };
 
-  const handleDeleteOption = async () => {
+  // ✅ Handle option deletion
+  const handleDeleteOption = () => {
     setOptions(options.filter((_, i) => i !== index));
   };
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="d-flex align-items-center gap-2 mb-2">
       {/* Radio button for MCQ, Checkbox for MSQ */}
       <input
         type={type}
@@ -71,6 +70,7 @@ const OptionInput = ({
           Array.isArray(correctAnswers) ? correctAnswers.includes(index) : false
         }
         onChange={handleCorrectAnswerChange}
+        className="form-check-input"
       />
 
       {/* Show Text Input if it's a Text Option */}
@@ -80,17 +80,23 @@ const OptionInput = ({
           value={option.content}
           onChange={handleTextChange}
           placeholder="Enter option"
-          className="p-2 border rounded-md"
+          className="form-control w-50"
         />
       ) : (
         /* Show Image Preview if it's an Image Option */
-        <div className="flex items-center space-x-2">
-          <input type="file" accept="image/*" onChange={handleImageChange} />
+        <div className="d-flex align-items-center gap-2">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="form-control"
+          />
           {option.content && (
             <img
               src={option.content}
               alt="Preview"
-              className="w-16 h-16 mt-2 border rounded-md"
+              className="img-thumbnail"
+              style={{ width: "60px", height: "60px", objectFit: "cover" }}
             />
           )}
         </div>
@@ -109,18 +115,15 @@ const OptionInput = ({
           setOptions(updatedOptions);
           setIsTextInput(!isTextInput);
         }}
-        className="p-1 text-sm bg-gray-300 rounded"
+        className="btn btn-sm btn-secondary"
       >
-        Switch to {isTextInput ? "Image" : "Text"}
+        {isTextInput ? "Image" : "Text"}
       </button>
 
       {/* Delete Option Button */}
-      <button
-        onClick={handleDeleteOption}
-        className="p-2 bg-red-500 text-white rounded"
-      >
-        X
-      </button>
+      <div onClick={handleDeleteOption} className="text-danger fw-bold">
+        <i class="bi bi-x-lg "></i>
+      </div>
     </div>
   );
 };

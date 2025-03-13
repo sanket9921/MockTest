@@ -5,8 +5,14 @@ const Test = models.Test;
 // Create a new Test
 exports.createTest = async (req, res) => {
   try {
-    const { name, group_id } = req.body;
-    const newTest = await Test.create({ name, group_id });
+    const { name, duration, difficulty, negative, group_id } = req.body;
+    const newTest = await Test.create({
+      name,
+      duration,
+      difficulty,
+      negative,
+      group_id,
+    });
     return res.status(201).json(newTest);
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -41,15 +47,19 @@ exports.getTestById = async (req, res) => {
 exports.updateTest = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, group_id } = req.body;
+    const { name, duration, difficulty, negative } = req.body;
 
     const test = await Test.findByPk(id);
     if (!test) {
       return res.status(404).json({ message: "Test not found" });
     }
 
-    test.name = name;
-    test.group_id = group_id;
+    // Update the existing test with new values
+    test.name = name || test.name;
+    test.duration = duration ?? null;
+    test.difficulty = difficulty || test.difficulty;
+    test.negative = negative ?? test.negative;
+
     await test.save();
 
     return res.status(200).json(test);

@@ -2,12 +2,12 @@ import { useState } from "react";
 import QuestionForm from "./QuestionForm";
 import { submitQuestion } from "../../../services/questionService";
 
-const MCQForm = ({ testId }) => {
+const MCQForm = ({ data, testId }) => {
+  console.log(data);
   const defaultQuestion = {
     content: "",
     content_type: "text",
     marks: 1,
-    negative_marks: 0,
     explanation: "",
     file: null,
   };
@@ -23,10 +23,10 @@ const MCQForm = ({ testId }) => {
 
   const handleSubmit = async () => {
     const formData = new FormData();
-    formData.append("test_id", testId);
+    formData.append("test_id", testId ? testId : data.questions[0].test_id);
+    formData.append("passage_id", data?.passage_id ? data.passage_id : "");
     formData.append("question_type", "single_choice");
     formData.append("marks", question.marks);
-    formData.append("negativeMark", question.negative_marks);
     formData.append("explanation", question.explanation);
     if (question.content_type === "text") {
       formData.append("content", question.content);
@@ -58,8 +58,6 @@ const MCQForm = ({ testId }) => {
 
   return (
     <>
-      <h2 className="text-lg font-bold mb-4">Create Question</h2>
-
       {/* MCQ Form Example */}
       <QuestionForm
         type={"radio"}
@@ -74,7 +72,7 @@ const MCQForm = ({ testId }) => {
       {/* Submit Button */}
       <button
         onClick={handleSubmit}
-        className="mt-4 bg-green-500 text-white px-4 py-2 rounded"
+        className="mt-4 btn btn-primary text-white px-4 py-2 rounded"
       >
         Save Question
       </button>

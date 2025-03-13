@@ -21,10 +21,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      negative_marks: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
       type: {
         type: DataTypes.ENUM(
           "single_choice",
@@ -78,7 +74,6 @@ module.exports = (sequelize, DataTypes) => {
       as: "fib_answer",
     });
   };
-  // ✅ Use `question.sequelize.models` to access models dynamically
   Question.afterCreate(async (question, options) => {
     setTimeout(async () => {
       const models = question.sequelize.models;

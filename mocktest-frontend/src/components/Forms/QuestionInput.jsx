@@ -1,34 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { updateQuestion } from "../../services/questionService";
+import RichTextEditor from "../common/RichTextEditor";
 
 const QuestionInput = ({ question, setQuestion, selectedQuestion }) => {
   const [showUpdateButton, setShowUpdateButton] = useState(false);
 
   useEffect(() => {
-    // Reset update button visibility when a new question is selected
     setShowUpdateButton(false);
-    console.log(showUpdateButton);
   }, [selectedQuestion]);
 
-  // Handle text input change
-  const handleTextChange = (e) => {
+  // ✅ Handle Rich Text Change
+  const handleTextChange = (value) => {
     const updatedQuestion = {
       ...question,
-      content: e.target.value,
+      content: value,
       content_type: "text",
-      file: null, // Reset file if switching from image to text
+      file: null,
     };
     setQuestion(updatedQuestion);
     checkForChanges(updatedQuestion);
   };
 
-  // Handle image file selection
+  // ✅ Handle Image Upload
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const updatedQuestion = {
         ...question,
-        content: URL.createObjectURL(file), // Show preview of selected image
+        content: URL.createObjectURL(file),
         content_type: "image",
         file,
       };
@@ -37,7 +36,7 @@ const QuestionInput = ({ question, setQuestion, selectedQuestion }) => {
     }
   };
 
-  // Toggle between text and image input
+  // ✅ Toggle Input Type (Text ↔ Image)
   const handleToggleInputType = () => {
     const updatedQuestion = {
       ...question,
@@ -49,7 +48,7 @@ const QuestionInput = ({ question, setQuestion, selectedQuestion }) => {
     checkForChanges(updatedQuestion);
   };
 
-  // Handle marks change
+  // ✅ Handle Marks Input
   const handleMarksChange = (e) => {
     const updatedQuestion = {
       ...question,
@@ -59,7 +58,7 @@ const QuestionInput = ({ question, setQuestion, selectedQuestion }) => {
     checkForChanges(updatedQuestion);
   };
 
-  // Handle marks change
+  // ✅ Handle Negative Marks Input
   const handleNegativeMarksChange = (e) => {
     const updatedQuestion = {
       ...question,
@@ -68,7 +67,8 @@ const QuestionInput = ({ question, setQuestion, selectedQuestion }) => {
     setQuestion(updatedQuestion);
     checkForChanges(updatedQuestion);
   };
-  // Check if there are any changes compared to selectedQuestion
+
+  // ✅ Check for Changes (Enable Update Button)
   const checkForChanges = (updatedQuestion) => {
     if (!selectedQuestion) {
       setShowUpdateButton(false);
@@ -79,17 +79,18 @@ const QuestionInput = ({ question, setQuestion, selectedQuestion }) => {
       updatedQuestion.content !== selectedQuestion.content ||
       updatedQuestion.content_type !== selectedQuestion.content_type ||
       updatedQuestion.marks !== selectedQuestion.marks ||
+      updatedQuestion.negative_marks !== selectedQuestion.negative_marks ||
       (updatedQuestion.content_type === "image" && updatedQuestion.file);
 
-    console.log(hasChanges);
     setShowUpdateButton(hasChanges);
   };
 
-  // Handle update logic
+  // ✅ Handle Update Question
   const handleUpdateQuestion = async () => {
-    console.log("Updating question:", question);
     const formData = new FormData();
     formData.append("marks", question.marks);
+    formData.append("negative_marks", question.negative_marks || 0);
+
     if (question.content_type === "text") {
       formData.append("content", question.content);
       formData.append("content_type", "text");
@@ -102,69 +103,50 @@ const QuestionInput = ({ question, setQuestion, selectedQuestion }) => {
   };
 
   return (
-    <div className="mb-4">
-      <div className="flex items-center justify-between mb-2">
-        <label className="text-sm font-medium text-gray-700">Question:</label>
+    <div className="my-4">
+      {/* Question Input */}
+      <div className="my-3">
+        <label className="text-sm font-medium">Question:</label>
         <button
           onClick={handleToggleInputType}
-          className="px-3 py-1 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
+          className="ms-3 btn btn-sm btn-secondary"
         >
-          Switch to {question.content_type === "text" ? "Image" : "Text"}
+          {question.content_type === "text" ? "Image" : "Text"}
         </button>
       </div>
 
-      {/* Show Text Input if Question Type is Text */}
+      {/* Rich Text Editor for Text Questions */}
       {question.content_type === "text" ? (
-        <textarea
-          className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          rows="4"
-          value={question.content}
-          onChange={handleTextChange}
-          placeholder="Enter your question here..."
-        />
+        <RichTextEditor value={question.content} onChange={handleTextChange} />
       ) : (
-        /* Show Image Upload & Preview if Question Type is Image */
-        <div className="flex flex-col items-start gap-2">
+        /* Image Upload */
+        <div className="mb-3">
           <input type="file" accept="image/*" onChange={handleImageChange} />
           {question.content && (
             <img
               src={question.content}
-              alt="Question Preview"
-              className="mt-2 w-40 h-40 object-cover border rounded-md"
+              alt="Preview"
+              className="mt-2 img-thumbnail"
+              style={{ width: "150px", height: "150px", objectFit: "cover" }}
             />
           )}
         </div>
       )}
 
       {/* Marks Input */}
-      <div className="mt-2">
-        <label className="text-sm font-medium text-gray-700">Marks:</label>
+      <div className="my-3">
+        <label className="text-sm font-medium">Marks:</label>
         <input
           type="number"
-          className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="form-control"
           value={question.marks}
           onChange={handleMarksChange}
         />
       </div>
 
-      <div className="mt-2">
-        <label className="text-sm font-medium text-gray-700">
-          Negative Marks (optional)
-        </label>
-        <input
-          type="number"
-          className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={question.negative_marks}
-          onChange={handleNegativeMarksChange}
-        />
-      </div>
-
-      {/* Show Update Button Only If Editing & Changes Detected */}
+      {/* Update Button */}
       {showUpdateButton && (
-        <button
-          onClick={handleUpdateQuestion}
-          className="mt-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-        >
+        <button onClick={handleUpdateQuestion} className="btn btn-success">
           Update Question
         </button>
       )}

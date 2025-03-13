@@ -2,35 +2,29 @@ import React from "react";
 
 const DeleteConfirmationModal = ({ type, content, onDelete, onClose }) => {
   return (
-    <div>
-      <h2 className="text-xl font-semibold text-gray-800">
-        Are you sure you want to delete this {type}?
-      </h2>
+    <div className="p-3 bg-white rounded shadow">
+      <h5 className="fw-bold text-danger">Confirm Deletion</h5>
+      <p className="text-muted">Are you sure you want to delete this {type}?</p>
+      <p className="text-danger small">This action cannot be undone.</p>
 
-      <p className="text-sm text-gray-500 mt-2">
-        This action cannot be undone.
-      </p>
-
-      <div className="mt-4">
+      <div className="mt-3">
         {content?.startsWith("http") ? (
           <img
             src={content}
             alt="Item to delete"
-            className="w-full h-32 object-contain rounded-md border border-gray-300"
+            className="img-fluid border rounded shadow-sm"
           />
         ) : (
-          <p className="text-lg font-medium text-gray-700 bg-gray-100 p-2 rounded-md">
-            {content}
-          </p>
+          <p className="p-2 border rounded bg-light">{content}</p>
         )}
       </div>
 
-      <div className="mt-6">
-        <button
-          onClick={onDelete}
-          className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
-        >
-          Delete
+      <div className="mt-4 d-flex justify-content-end gap-2">
+        <button className="btn btn-secondary" onClick={onClose}>
+          Cancel
+        </button>
+        <button className="btn btn-danger" onClick={onDelete}>
+          <i className="bi bi-trash"></i> Delete
         </button>
       </div>
     </div>

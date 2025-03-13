@@ -6,28 +6,25 @@ const PassageQuestion = ({ passage, userAnswers, onSaveAnswer, onClear }) => {
   if (!passage) return null;
 
   return (
-    <div className="w-full p-6 bg-white shadow-md rounded-lg">
+    <div className="w-100 p-4 bg-white z-0 rounded">
       {/* Passage Section */}
-      <div className="mb-4 p-4 border-b border-gray-300">
-        <h3 className="text-lg font-semibold text-blue-600">Passage</h3>
+      <div className="mb-4 p-3 border-bottom">
+        <h3 className="text-primary">Passage</h3>
         {passage.content_type === "text" ? (
-          <p className="mt-2 text-gray-700">{passage.content}</p>
+          <p className="mt-2">{passage.content}</p>
         ) : (
           <img
             src={passage.content}
             alt="Passage"
-            className="mt-2 rounded-lg"
+            className="mt-2 rounded img-fluid w-100"
           />
         )}
       </div>
 
       {/* Questions Under the Passage */}
-      <div className="space-y-6">
+      <div className="d-flex flex-column gap-3 w-100">
         {passage.questions?.map((question) => (
-          <div
-            key={question.id}
-            className="p-4 border border-gray-200 rounded-lg"
-          >
+          <div key={question.id} className="p-3 border rounded w-100">
             {/* Fill in the Blank */}
             {question.type === "fill_in_the_blank" ? (
               <FillInTheBlank

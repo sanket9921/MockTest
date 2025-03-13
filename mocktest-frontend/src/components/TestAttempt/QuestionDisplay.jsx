@@ -13,12 +13,7 @@ const QuestionDisplay = ({
   if (!questionData) return null;
 
   return (
-    <motion.div
-      className="flex w-3/4 p-6 bg-white shadow-md rounded-lg"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className="custom-border question-container z-0">
       {/* Handle Passage-Based Questions */}
       {questionData.passage_id ? (
         <PassageQuestion
@@ -51,7 +46,7 @@ const QuestionDisplay = ({
           )}
         </>
       )}
-    </motion.div>
+    </div>
   );
 };
 
