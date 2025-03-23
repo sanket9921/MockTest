@@ -30,14 +30,14 @@ module.exports = (sequelize, DataTypes) => {
       },
       negative_marks: {
         // Negative marks deducted for incorrect answers
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: false,
-        defaultValue: 0,
+        defaultValue: 0.0,
       },
       final_score: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: false,
-        defaultValue: 0,
+        defaultValue: 0.0,
       },
       attempted_questions: {
         // Number of questions the user attempted

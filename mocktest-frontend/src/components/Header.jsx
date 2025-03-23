@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import bytraitlogo from "../assets/bytrait_logo.png";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthProvider";
 
 const Navbar = () => {
-  const [isCounsellor, setIsCounsellor] = useState(false);
+  const { isAdmin } = useAuth();
 
   const onLogOut = () => {
     console.log("Logged out");
@@ -13,9 +15,9 @@ const Navbar = () => {
       <nav className="container navbar navbar-expand-lg navbar-light bg-white px-3 rounded-pill">
         <div className="container-fluid d-flex align-items-center justify-content-between">
           {/* Logo */}
-          <a className="navbar-brand d-flex align-items-center" href="#">
+          <Link className="navbar-brand d-flex align-items-center" to="/">
             <img src={bytraitlogo} width="150" alt="Logo" />
-          </a>
+          </Link>
 
           {/* Toggler Button - Visible Only on Small Screens */}
           <button
@@ -40,6 +42,38 @@ const Navbar = () => {
           {/* Desktop Navbar - Only Visible on Large Screens */}
           <div className="collapse navbar-collapse justify-content-end d-none d-lg-flex">
             <ul className="navbar-nav d-flex align-items-center ms-auto mb-2 mb-lg-0">
+              <li className="nav-item dropdown">
+                <a
+                  className="nav-link dropdown-toggle"
+                  id="navbarDropdown"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  Mock Test
+                </a>
+                <ul
+                  className="dropdown-menu custom-border"
+                  aria-labelledby="navbarDropdown"
+                >
+                  <li>
+                    <Link className="dropdown-item" to="/">
+                      New Test
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="dropdown-item" to="/resume-test">
+                      Resume Test
+                    </Link>
+                  </li>
+
+                  <li>
+                    <Link className="dropdown-item" to="/test-completed">
+                      Completed Test
+                    </Link>
+                  </li>
+                </ul>
+              </li>
               <li className="nav-item">
                 <a className="nav-link" href="#">
                   About Us
@@ -50,25 +84,13 @@ const Navbar = () => {
                   Contact Us
                 </a>
               </li>
-              {!isCounsellor ? (
+
+              {isAdmin && ( // Show Test Category only for admins
                 <li className="nav-item">
-                  <a className="nav-link" href="#">
-                    My Report
-                  </a>
+                  <Link className="nav-link" to="/test-groups">
+                    Test Category
+                  </Link>
                 </li>
-              ) : (
-                <>
-                  <li className="nav-item">
-                    <a className="nav-link" href="#">
-                      Student Reports
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a className="nav-link" href="#">
-                      Career Preference
-                    </a>
-                  </li>
-                </>
               )}
               {/* Profile Dropdown */}
               <li className="nav-item dropdown ms-auto">
@@ -107,9 +129,9 @@ const Navbar = () => {
         aria-labelledby="offcanvasNavbarLabel"
       >
         <div className="offcanvas-header">
-          <h5 className="offcanvas-title" id="offcanvasNavbarLabel">
-            Menu
-          </h5>
+          <Link className="navbar-brand d-flex align-items-center" to="/">
+            <img src={bytraitlogo} width="150" alt="Logo" />
+          </Link>
           <button
             type="button"
             className="btn-close"
@@ -117,8 +139,41 @@ const Navbar = () => {
             aria-label="Close"
           ></button>
         </div>
-        <div className="offcanvas-body">
-          <ul className="navbar-nav ms-auto align-items-start">
+        <div className="offcanvas-body d-flex flex-column align-items-center">
+          <ul className="navbar-nav text-center">
+            <li className="nav-item dropdown">
+              <a
+                className="nav-link dropdown-toggle"
+                href="#"
+                id="mobileDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                Mock Test
+              </a>
+              <ul
+                className="dropdown-menu text-center custom-border"
+                aria-labelledby="mobileDropdown"
+              >
+                <li>
+                  <Link className="dropdown-item" to="/">
+                    New Test
+                  </Link>
+                </li>
+                <li>
+                  <Link className="dropdown-item" to="/resume-test">
+                    Resume Test
+                  </Link>
+                </li>
+
+                <li>
+                  <Link className="dropdown-item" to="/test-completed">
+                    Completed Test
+                  </Link>
+                </li>
+              </ul>
+            </li>
             <li className="nav-item">
               <a className="nav-link" href="#">
                 About Us
@@ -129,25 +184,12 @@ const Navbar = () => {
                 Contact Us
               </a>
             </li>
-            {!isCounsellor ? (
+            {isAdmin && ( // Show Test Category only for admins
               <li className="nav-item">
-                <a className="nav-link" href="#">
-                  My Report
-                </a>
+                <Link className="nav-link" to="/test-groups">
+                  Test Category
+                </Link>
               </li>
-            ) : (
-              <>
-                <li className="nav-item">
-                  <a className="nav-link" href="#">
-                    Student Reports
-                  </a>
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link" href="#">
-                    Career Preference
-                  </a>
-                </li>
-              </>
             )}
             <li>
               <a className="nav-link" href="#" onClick={onLogOut}>

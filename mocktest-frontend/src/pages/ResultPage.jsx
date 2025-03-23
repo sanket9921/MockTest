@@ -5,6 +5,7 @@ import QuestionList from "../components/Result/QuestionList";
 import { getResult } from "../services/testAttemptService";
 import StatsSummary from "../components/Result/StatsSummary";
 import Navbar from "../components/Header";
+import SimilarTest from "../components/Result/SimilarTest";
 
 const ResultPage = () => {
   const { attemptId } = useParams();
@@ -28,22 +29,26 @@ const ResultPage = () => {
   if (loading) return <p className="text-center text-lg">Loading...</p>;
   if (!resultData)
     return <p className="text-center text-red-500">No data found.</p>;
-  console.log(resultData);
   return (
-    <div className="container mx-auto p-6 my-3">
-      <Navbar />
-
-      {/* Test Result Header */}
-      <div className="m-6 p-6">
-        <h2 className="text-dark m-6 p-6">Test Result</h2>
+    <>
+      <div className="mt-3">
+        <Navbar />
       </div>
+      <div className="container mx-auto p-6 my-5">
+        {/* Test Result Header */}
+        <div className="m-6 p-6">
+          <h2 className="text-dark m-6 p-6">
+            Result <span>{resultData.test.name}</span>{" "}
+          </h2>
+        </div>
 
-      {/* Stats Summary */}
-      <StatsSummary stats={resultData.stats} className="my-5" />
+        {/* Stats Summary */}
+        <StatsSummary stats={resultData.stats} className="my-5" />
 
-      {/* Questions List */}
-      <QuestionList questions={resultData.data} />
-    </div>
+        {/* Questions List */}
+        <QuestionList questions={resultData} />
+      </div>
+    </>
   );
 };
 

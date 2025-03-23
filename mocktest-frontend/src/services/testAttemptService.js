@@ -57,3 +57,15 @@ export const getRemainingTime = async (attemptId) => {
   const res = await API.get(`attempts/getRemainingTime/${attemptId}`);
   return res.data;
 };
+
+export const getInProgressTests = async () => {
+  const response = await API.get("/attempts/in-progress");
+  return response.data.data;
+};
+
+export const getCompletedTests = async (page = 1, limit = 8) => {
+  const response = await API.get(`/attempts/testcompleted`, {
+    params: { page, limit },
+  });
+  return response.data;
+};

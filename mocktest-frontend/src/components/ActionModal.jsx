@@ -7,14 +7,14 @@ const ActionModal = ({ data, onClose, children }) => {
       style={{ backdropFilter: "blur(6px)", zIndex: 1050 }}
     >
       <motion.div
-        initial={{ opacity: 0, y: -50 }}
+        initial={{ opacity: 0, y: 0 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -50 }}
         className="bg-white rounded shadow-lg d-flex flex-column"
         style={{
-          width: "95%", // Almost full width on mobile
-          maxWidth: "500px", // Controlled width on larger screens
-          maxHeight: "90vh", // Prevent overflow
+          width: "95%", // Default for small screens (mobile)
+          maxWidth: "800px", // Larger width for big screens
+          maxHeight: "90vh", // Prevents overflow
         }}
       >
         {/* Modal Header */}

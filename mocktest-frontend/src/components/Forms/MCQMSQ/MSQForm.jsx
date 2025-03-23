@@ -24,7 +24,7 @@ const MSQForm = ({ data, testId }) => {
     const formData = new FormData();
     formData.append("test_id", testId ? testId : data.questions[0].test_id);
     formData.append("passage_id", data?.passage_id ? data.passage_id : "");
-    formData.append("question_type", "single_choice");
+    formData.append("question_type", "multiple_choice");
 
     formData.append("marks", question.marks);
     formData.append("explanation", question.explanation);
@@ -59,8 +59,6 @@ const MSQForm = ({ data, testId }) => {
 
   return (
     <>
-      <h2 className="text-lg font-bold mb-4">Create Question</h2>
-
       {/* MCQ Form Example */}
       <QuestionForm
         type={"checkbox"}

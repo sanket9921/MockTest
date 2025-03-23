@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import QuestionInput from "./QuestionInput";
 import { submitQuestion } from "../../services/questionService";
+import RichTextEditor from "../common/RichTextEditor";
 
 const FillBlankForm = ({
   testId,
@@ -27,6 +28,7 @@ const FillBlankForm = ({
         content: selectedQuestion.content,
         content_type: selectedQuestion.content_type,
         marks: selectedQuestion.marks,
+        explanation: selectedQuestion.explanation || "",
         file: null,
       });
 
@@ -54,7 +56,7 @@ const FillBlankForm = ({
 
   const resetForm = () => {
     setQuestion(defaultQuestion);
-    setCorrectAnswer([]);
+    setCorrectAnswer("");
     setSelectedQuestion(null);
   };
 
@@ -82,13 +84,6 @@ const FillBlankForm = ({
     refreshQuestions();
   };
 
-  const handleExplanationChange = (e) => {
-    setQuestion((prevQuestion) => ({
-      ...prevQuestion,
-      explanation: e.target.value,
-    }));
-  };
-
   return (
     <div className="container p-3">
       <div className="mb-3">
@@ -114,11 +109,14 @@ const FillBlankForm = ({
 
       <div className="mb-3">
         <label className="form-label">Explanation</label>
-        <textarea
-          className="form-control"
-          rows="4"
+        <RichTextEditor
           value={question.explanation}
-          onChange={handleExplanationChange}
+          onChange={(value) =>
+            setQuestion((prevQuestion) => ({
+              ...prevQuestion,
+              explanation: value,
+            }))
+          }
           placeholder="Enter explanation..."
         />
       </div>

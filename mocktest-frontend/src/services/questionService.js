@@ -28,8 +28,7 @@ export const submitPassageWithQuestions = async (formData) => {
 };
 
 export const updateExplanation = async (questionId, explanation) => {
-  return await API.put(`/questions/updateExplanation`, {
-    questionId,
+  return await API.put(`/questions/updateExplanation/` + questionId, {
     explanation,
   });
 };

@@ -8,6 +8,7 @@ import {
   createTest,
   fetchTestsByGroup,
   updateTest,
+  toggleTestPublishStatus,
 } from "../services/testService.";
 
 const TestsPage = () => {
@@ -16,35 +17,41 @@ const TestsPage = () => {
   const [loading, setLoading] = useState(true);
   const [modalData, setModalData] = useState(null);
   const [testCategory, setTestCategory] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     if (groupId) {
-      getCategoriesById();
-      loadTests();
+      getCategoryDetails();
+      loadTests(page);
     }
-  }, [groupId]);
+  }, [groupId, page]);
 
-  const getCategoriesById = async () => {
+  const getCategoryDetails = async () => {
     try {
       const category = await getTestGroupById(groupId);
-      console.log("Fetched Category:", category);
-      setTestCategory(category.data || category); // Ensure correct data assignment
+      setTestCategory(category.data || category);
     } catch (error) {
       console.error("Error fetching test category:", error);
     }
   };
 
-  const loadTests = async () => {
+  const loadTests = async (pageNumber = 1) => {
+    setLoading(true);
     try {
-      const testsData = await fetchTestsByGroup(groupId);
-      console.log(testsData);
-      setTests(testsData);
+      const { data, totalPages } = await fetchTestsByGroup(
+        groupId,
+        pageNumber,
+        9
+      );
+      setTests(data);
+      setTotalPages(totalPages);
     } catch (error) {
       console.error("Error fetching tests:", error);
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   const handleSaveTest = async (testData) => {
@@ -52,7 +59,7 @@ const TestsPage = () => {
       if (testData.id) {
         await updateTest(testData.id, testData);
       } else {
-        await createTest({ ...testData, group_id: groupId }); // Call your create API
+        await createTest({ ...testData, group_id: groupId });
       }
       setModalData(null);
       loadTests();
@@ -61,10 +68,19 @@ const TestsPage = () => {
     }
   };
 
+  const handleTogglePublish = async (testId, currentStatus) => {
+    try {
+      await toggleTestPublishStatus(testId, !currentStatus);
+      loadTests();
+    } catch (error) {
+      console.error("Error updating publish status:", error);
+    }
+  };
+
   return (
     <div className="container my-3">
       <Navbar />
-      <div className="container-fluid mt-4 z-0">
+      <div className="container-fluid mt-4">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div>
             <h1 className="mb-3">{testCategory?.name || "Loading..."}</h1>
@@ -77,15 +93,16 @@ const TestsPage = () => {
             + Add Test
           </button>
         </div>
+
         {loading ? (
           <p className="text-center text-primary">Loading tests...</p>
         ) : tests.length === 0 ? (
           <p className="text-center text-muted">No tests available.</p>
         ) : (
-          <div className="custom-border p-3 z-0">
+          <div className="custom-border p-3">
             {tests.map((test) => (
               <div key={test.id} className="row align-items-center mb-3">
-                <div className="col-12 col-md-9 d-flex flex-row align-items-center gap-2">
+                <div className="col-12 col-md-8 d-flex flex-row align-items-center gap-2">
                   <img
                     src={image}
                     width={40}
@@ -101,25 +118,33 @@ const TestsPage = () => {
                         {test.duration ? test.duration + " min" : "No Limit"}
                       </span>
                       <span>
-                        <i className="bi bi-card-list"></i> {test.questions}{" "}
-                        Questions
+                        <i className="bi bi-card-list"></i>{" "}
+                        {test.question_count} Questions
                       </span>
                       <span>
-                        <i className="bi bi-bar-chart"></i> Difficulty{" : "}
+                        <i className="bi bi-bar-chart"></i> Difficulty:{" "}
                         {test.difficulty}
                       </span>
-                      <span className=" m-0">
-                        <i className="bi bi-x-circle"></i> Negative{" : "}
-                        {test.negative}{" "}
+                      <span>
+                        <i className="bi bi-x-circle"></i> Negative:{" "}
+                        {test.negative}
                       </span>
-                      <span className=" m-0">
-                        <i className="bi bi-clipboard-check"></i> Marks{" : "}
-                        {test.totalMarks}{" "}
+                      <span>
+                        <i className="bi bi-clipboard-check"></i> Marks:{" "}
+                        {test.totalMarks}
                       </span>
                     </div>
                   </div>
                 </div>
-                <div className="col-12 col-md-3 text-md-end mt-2 mt-md-0">
+                <div className="col-12 col-md-4 text-md-end mt-2 mt-md-0">
+                  <button
+                    className={`btn btn-sm ${
+                      test.publish ? "btn-danger" : "btn-success"
+                    } me-2`}
+                    onClick={() => handleTogglePublish(test.id, test.publish)}
+                  >
+                    {test.publish ? "Unpublish" : "Publish"}
+                  </button>
                   <button
                     className="btn btn-primary me-2"
                     onClick={() =>
@@ -129,7 +154,7 @@ const TestsPage = () => {
                     Edit Test
                   </button>
                   <button
-                    className="btn btn-outline-secondary"
+                    className="btn btn-outline-secondary me-2"
                     onClick={() => navigate(`/addquestions/${test.id}`)}
                   >
                     View Questions
@@ -139,6 +164,30 @@ const TestsPage = () => {
             ))}
           </div>
         )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="d-flex justify-content-center mt-3">
+            <button
+              className="btn btn-outline-primary me-2"
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+            >
+              Previous
+            </button>
+            <span className="align-self-center">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              className="btn btn-outline-primary ms-2"
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+            >
+              Next
+            </button>
+          </div>
+        )}
+
         {modalData && (
           <TestFormModal
             data={modalData}

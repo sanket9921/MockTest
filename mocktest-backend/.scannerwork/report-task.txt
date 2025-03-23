@@ -1,0 +1,6 @@
+projectKey=Mock-Test-App
+serverUrl=http://localhost:9000
+serverVersion=25.3.0.104237
+dashboardUrl=http://localhost:9000/dashboard?id=Mock-Test-App
+ceTaskId=397e29cb-60bd-43b7-ae59-c449e05d5042
+ceTaskUrl=http://localhost:9000/api/ce/task?id=397e29cb-60bd-43b7-ae59-c449e05d5042

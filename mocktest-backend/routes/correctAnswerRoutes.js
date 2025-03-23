@@ -24,4 +24,9 @@ router.get(
   correctAnswerController.getAnswerOfFib
 );
 
+router.put(
+  "/updateAnswerOfFib/:questionId",
+  correctAnswerController.updateAnswerOfFib
+);
+
 module.exports = router;

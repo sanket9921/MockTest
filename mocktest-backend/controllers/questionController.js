@@ -381,17 +381,20 @@ exports.addPassageWithQuestions = async (req, res) => {
 
 exports.updateExplanation = async (req, res) => {
   try {
-    const { questionId, explanation } = req.body;
+    const { questionId } = req.params; // Extract from params instead of body
+    const { explanation } = req.body;
 
-    // Ensure the explanation is provided
-    if (explanation === undefined) {
+    if (!questionId || isNaN(Number(questionId))) {
+      return res.status(400).json({ message: "Invalid questionId" });
+    }
+
+    if (typeof explanation !== "string" || explanation.trim() === "") {
       return res.status(400).json({ message: "Explanation is required" });
     }
 
-    // Find and update the explanation field
     const [updatedRows] = await models.Question.update(
       { explanation },
-      { where: { id: questionId } }
+      { where: { id: Number(questionId) } }
     );
 
     if (updatedRows === 0) {
@@ -402,7 +405,7 @@ exports.updateExplanation = async (req, res) => {
       .status(200)
       .json({ message: "Explanation updated successfully" });
   } catch (error) {
-    console.error("Error updating explanation:", error);
+    console.error("Error updating explanation:", error.message);
     return res.status(500).json({ message: "Internal server error" });
   }
 };

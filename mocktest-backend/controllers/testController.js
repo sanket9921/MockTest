@@ -1,4 +1,5 @@
 // controllers/testController.js
+const { Op, fn, col, literal, Sequelize } = require("sequelize");
 const { models } = require("../models");
 const Test = models.Test;
 
@@ -29,14 +30,30 @@ exports.getAllTests = async (req, res) => {
   }
 };
 
-// Get a single Test by ID
+// Get a single Test by ID with question count
 exports.getTestById = async (req, res) => {
   try {
     const { id } = req.params;
-    const test = await Test.findByPk(id);
+    const test = await models.Test.findOne({
+      where: { id },
+      attributes: {
+        include: [
+          [fn("COUNT", col("Questions.id")), "question_count"], // Count questions
+        ],
+      },
+      include: [
+        {
+          model: models.Question,
+          attributes: [], // We only need the count, so no need to fetch question details
+        },
+      ],
+      group: ["Test.id"], // Ensure correct aggregation
+    });
+
     if (!test) {
       return res.status(404).json({ message: "Test not found" });
     }
+
     return res.status(200).json(test);
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -88,11 +105,65 @@ exports.deleteTest = async (req, res) => {
 exports.getTestByGroupId = async (req, res) => {
   try {
     const { group_id } = req.params;
-    const tests = await Test.findAll({
-      where: { group_id },
+    const userId = req.user?.user?.userId?.toString();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 9;
+    const offset = (page - 1) * limit;
+
+    // Check if user is an admin
+    const adminIds = process.env.ADMIN_IDS
+      ? process.env.ADMIN_IDS.split(",")
+      : [];
+    const isAdmin = adminIds.includes(userId);
+
+    const { count, rows } = await models.Test.findAndCountAll({
+      where: isAdmin ? { group_id } : { group_id, publish: true },
+      attributes: {
+        include: [
+          [
+            Sequelize.literal(`(
+              SELECT COUNT(*) 
+              FROM mock_test_question AS q
+              WHERE q.test_id = "Test".id
+            )`),
+            "question_count",
+          ],
+        ],
+      },
+      limit,
+      offset,
+      group: ["Test.id"], // Avoids issues with aggregation
     });
-    return res.status(200).json(tests);
+
+    return res.status(200).json({
+      data: rows,
+      totalPages: Math.ceil(count.length / limit), // Fix total page calculation
+      currentPage: page,
+    });
   } catch (error) {
+    console.error("Error fetching tests:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+exports.togglePublishStatus = async (req, res) => {
+  try {
+    const { testId } = req.params;
+    const { publish } = req.body;
+
+    const test = await models.Test.findByPk(testId);
+    if (!test) {
+      return res.status(404).json({ message: "Test not found" });
+    }
+
+    test.publish = publish;
+    await test.save();
+
+    return res
+      .status(200)
+      .json({ message: `Test ${publish ? "Published" : "Unpublished"}` });
+  } catch (error) {
+    console.error("Error updating publish status:", error);
     return res.status(500).json({ error: error.message });
   }
 };

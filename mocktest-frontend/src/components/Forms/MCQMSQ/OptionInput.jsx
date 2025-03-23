@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import RichTextEditor from "../../common/RichTextEditor";
 
 const OptionInput = ({
   index,
@@ -13,12 +14,12 @@ const OptionInput = ({
     option.content_type === "text"
   );
 
-  // ✅ Handle text input change
-  const handleTextChange = (e) => {
+  // ✅ Handle rich text change
+  const handleTextChange = (value) => {
     const updatedOptions = [...options];
     updatedOptions[index] = {
       ...option,
-      content: e.target.value,
+      content: value, // Set rich text content
       content_type: "text",
       file: null,
     };
@@ -73,15 +74,11 @@ const OptionInput = ({
         className="form-check-input"
       />
 
-      {/* Show Text Input if it's a Text Option */}
+      {/* Show RichTextEditor if it's a Text Option */}
       {option.content_type === "text" ? (
-        <input
-          type="text"
-          value={option.content}
-          onChange={handleTextChange}
-          placeholder="Enter option"
-          className="form-control w-50"
-        />
+        <div className="w-50">
+          <RichTextEditor value={option.content} onChange={handleTextChange} />
+        </div>
       ) : (
         /* Show Image Preview if it's an Image Option */
         <div className="d-flex align-items-center gap-2">
@@ -122,7 +119,7 @@ const OptionInput = ({
 
       {/* Delete Option Button */}
       <div onClick={handleDeleteOption} className="text-danger fw-bold">
-        <i class="bi bi-x-lg "></i>
+        <i className="bi bi-x-lg"></i>
       </div>
     </div>
   );

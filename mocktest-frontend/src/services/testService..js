@@ -1,8 +1,10 @@
 import { data } from "react-router-dom";
 import API from "../api/axios";
 
-export const fetchTestsByGroup = async (groupId) => {
-  const response = await API.get(`/tests/group/${groupId}`);
+export const fetchTestsByGroup = async (groupId, page = 1, limit = 9) => {
+  const response = await API.get(`/tests/group/${groupId}`, {
+    params: { page, limit },
+  });
   return response.data;
 };
 
@@ -25,4 +27,7 @@ export const getTestDetails = async (testId) => {
     console.error("Error fetching test details:", error);
     throw error;
   }
+};
+export const toggleTestPublishStatus = async (testId, publishStatus) => {
+  return await API.patch(`tests/${testId}/publish`, { publish: publishStatus });
 };

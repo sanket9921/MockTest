@@ -59,7 +59,7 @@ const TestAttemptPage = () => {
   };
 
   return (
-    <div className="container">
+    <div className="">
       <TestAttemptLayout attemptId={attemptId} />
     </div>
   );

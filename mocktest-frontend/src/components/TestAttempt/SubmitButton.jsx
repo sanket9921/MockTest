@@ -27,7 +27,7 @@ const SubmitButton = ({ attemptId, onSubmit }) => {
   return (
     <div>
       <button onClick={handleSubmitClick} className="btn btn-danger">
-        Submit Test
+        Submit
       </button>
 
       {loading && <p>Loading stats...</p>}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PassageItem from "./PassageItem";
 import QuestionItem from "./QuestionItem";
 import ActionModal from "./ActionModal";
@@ -12,9 +12,11 @@ import DeletePassage from "./Forms/DeletePassage";
 import UpdateOptionForm from "./Forms/UpdateOptionForm";
 import MCQForm from "./Forms/MCQMSQ/MCQForm";
 import MSQForm from "./Forms/MCQMSQ/MSQForm";
-import updateExplanationForm from "./Forms/updateExplanationForm";
+import image from "..//assets/image.png";
+import UpdateExplanationForm from "./Forms/UpdateExplanationForm";
+import UpdateFibAnswerForm from "./Forms/UpdateFibAnswerForm";
 
-const QuestionList = ({ questions, refreshQuestions }) => {
+const QuestionList = ({ test, questions, refreshQuestions }) => {
   const [modalData, setModalData] = useState(null);
 
   const handleAction = (action, item, type) => {
@@ -29,15 +31,40 @@ const QuestionList = ({ questions, refreshQuestions }) => {
   return (
     <div className="container-fluid vh-100 overflow-auto">
       {/* Summary Section */}
-      <div className="d-flex justify-content-between p-3 bg-light border-bottom">
-        <div>
-          <strong>Total Marks:</strong> {questions.length * 1}
-        </div>
-        <div>
-          <strong>Total Questions:</strong> {questions.length}
+      <div className="col-12 col-md-9 d-flex flex-row align-items-center gap-2">
+        <img
+          src={image}
+          width={40}
+          height={40}
+          alt="img"
+          className="rounded-circle border"
+        />
+        <div className="mt-3">
+          <h4>{test?.name}</h4>
+          <div className="d-flex flex-wrap gap-2">
+            <span>
+              <i className="bi bi-clock"></i>{" "}
+              {test?.duration ? test?.duration + " min" : "No Limit"}
+            </span>
+            <span>
+              <i className="bi bi-card-list"></i> {test?.question_count}{" "}
+              Questions
+            </span>
+            <span>
+              <i className="bi bi-bar-chart"></i> Difficulty{" : "}
+              {test?.difficulty}
+            </span>
+            <span className=" m-0">
+              <i className="bi bi-x-circle"></i> Negative{" : "}
+              {test?.negative}{" "}
+            </span>
+            <span className=" m-0">
+              <i className="bi bi-clipboard-check"></i> Marks{" : "}
+              {test?.totalMarks}{" "}
+            </span>
+          </div>
         </div>
       </div>
-
       {/* Main Accordion for Questions & Passages */}
       <div className="accordion mt-3" id="questionAccordion">
         {questions.map((item, index) => (
@@ -96,7 +123,10 @@ const QuestionList = ({ questions, refreshQuestions }) => {
             <MSQForm data={modalData.item} onClose={closeModal} />
           )}
           {modalData.action === "updateExplanation" && (
-            <updateExplanationForm data={modalData.item} onClose={closeModal} />
+            <UpdateExplanationForm data={modalData.item} onClose={closeModal} />
+          )}
+          {modalData.action === "updateTextAnswers" && (
+            <UpdateFibAnswerForm data={modalData.item} onClose={closeModal} />
           )}
         </ActionModal>
       )}

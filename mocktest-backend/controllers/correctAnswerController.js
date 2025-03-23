@@ -101,3 +101,44 @@ exports.getAnswerOfFib = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+exports.updateAnswerOfFib = async (req, res) => {
+  try {
+    const { questionId } = req.params;
+    const { correctTextAnswer } = req.body;
+
+    console.log("Received request:", { questionId, correctTextAnswer });
+
+    // Validate questionId
+    if (!questionId || isNaN(Number(questionId))) {
+      return res.status(400).json({ message: "Invalid questionId" });
+    }
+
+    // Validate correctTextAnswer
+    if (
+      typeof correctTextAnswer !== "string" ||
+      correctTextAnswer.trim() === ""
+    ) {
+      return res.status(400).json({ message: "Correct answer is required" });
+    }
+
+    // Check if the answer exists for the given question_id
+    const existingAnswer = await models.AnswersFib.findOne({
+      where: { question_id: Number(questionId) },
+    });
+
+    if (!existingAnswer) {
+      return res
+        .status(404)
+        .json({ message: "Answer not found for the given question" });
+    }
+
+    // Update the FIB answer
+    await existingAnswer.update({ correctTextAnswer });
+
+    return res.status(200).json({ message: "Answer updated successfully" });
+  } catch (error) {
+    console.error("Error updating FIB answer:", error.message);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};

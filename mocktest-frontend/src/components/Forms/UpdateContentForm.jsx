@@ -1,21 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import RichTextEditor from "../common/RichTextEditor";
 
-const UpdateContentForm = ({ initialData, type, onSubmit }) => {
+const UpdateContentForm = ({ initialData = {}, type, onSubmit }) => {
   console.log(initialData);
 
   const [formData, setFormData] = useState({
-    content: initialData.content || "",
-    content_type: initialData.content_type || "text",
-    marks: initialData.marks || "", // Only for questions
+    content: initialData?.content || "",
+    content_type: initialData?.content_type || "text",
+    marks: initialData?.marks || "", // Only for questions
     file: null,
   });
 
+  useEffect(() => {
+    setFormData({
+      content: initialData?.content || "",
+      content_type: initialData?.content_type || "text",
+      marks: initialData?.marks || "",
+      file: null,
+    });
+  }, [initialData]);
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleFileChange = (e) => {
-    setFormData({ ...formData, file: e.target.files[0], content: "" });
+    setFormData((prev) => ({ ...prev, file: e.target.files[0], content: "" }));
+  };
+
+  const handleContentChange = (value) => {
+    setFormData((prev) => ({ ...prev, content: value }));
   };
 
   const handleSubmit = (e) => {
@@ -44,13 +58,9 @@ const UpdateContentForm = ({ initialData, type, onSubmit }) => {
 
       {/* Content Input */}
       {formData.content_type === "text" ? (
-        <textarea
-          name="content"
+        <RichTextEditor
           value={formData.content}
-          onChange={handleChange}
-          className="form-control mb-3"
-          rows="3"
-          placeholder="Enter content here..."
+          onChange={handleContentChange}
         />
       ) : (
         <input

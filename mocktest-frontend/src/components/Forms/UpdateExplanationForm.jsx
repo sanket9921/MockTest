@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { updateExplanation } from "../../services/questionService";
+import RichTextEditor from "../common/RichTextEditor";
 
-const updateExplanationForm = ({ data, onClose }) => {
+const UpdateExplanationForm = ({ data, onClose }) => {
   const [explanation, setExplanation] = useState(data.explanation || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  console.log(data);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -31,13 +34,8 @@ const updateExplanationForm = ({ data, onClose }) => {
     <form onSubmit={handleUpdate}>
       <div className="mb-3">
         <label className="form-label">Explanation</label>
-        <textarea
-          className="form-control"
-          rows="4"
-          value={explanation}
-          onChange={(e) => setExplanation(e.target.value)}
-          placeholder="Enter explanation..."
-        ></textarea>
+        {/* Replace textarea with RichTextEditor */}
+        <RichTextEditor value={explanation} onChange={setExplanation} />
         {error && <div className="text-danger mt-2">{error}</div>}
       </div>
 
@@ -58,4 +56,4 @@ const updateExplanationForm = ({ data, onClose }) => {
   );
 };
 
-export default updateExplanationForm;
+export default UpdateExplanationForm;

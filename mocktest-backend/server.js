@@ -1,5 +1,8 @@
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const authMiddleware = require("./middlewares/authMiddleware");
+
 const bodyParser = require("body-parser");
 // const sequelize = require("./config/db");
 const { sequelize, models } = require("./models"); // Import Sequelize models
@@ -11,19 +14,32 @@ const optionRoutes = require("./routes/optionsRoutes");
 const correctAnswerRoutes = require("./routes/correctAnswerRoutes");
 const testAttemptRoutes = require("./routes/testAttemptRoutes");
 const passageRoutes = require("./routes/passageRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const authorizeMiddleware = require("./middlewares/authorizeMiddleware");
 // require("dotenv").config();
 
 const app = express();
+// const corsOptions = {
+//   origin: (origin, callback) => {
+//     callback(null, true); // Allow all origins
+//   },
+//   methods: ["GET", "POST", "PUT", "DELETE"],
+//   allowedHeaders: ["Content-Type", "Authorization"],
+//   credentials: true, // Allow credentials (cookies, authorization headers)
+// };
+
 const corsOptions = {
-  origin: (origin, callback) => {
-    callback(null, true); // Allow all origins
-  },
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: "http://127.0.0.1:5173", // ✅ Change this to your frontend URL
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true, // Allow credentials (cookies, authorization headers)
+  credentials: true, // ✅ Required for cookies
 };
+
 app.use(cors(corsOptions));
+app.use(cookieParser());
 app.use(bodyParser.json());
+app.use(authMiddleware);
+app.use(authorizeMiddleware);
 
 app.use("/api/test-groups", testGroupRoutes);
 app.use("/api/tests", testRoutes);
@@ -32,6 +48,7 @@ app.use("/api/options", optionRoutes);
 app.use("/api/answer", correctAnswerRoutes);
 app.use("/api", testAttemptRoutes);
 app.use("/api/passage", passageRoutes);
+app.use("/api", adminRoutes);
 
 // Sync Database
 sequelize

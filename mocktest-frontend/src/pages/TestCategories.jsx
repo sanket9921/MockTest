@@ -5,16 +5,21 @@ import { fetchTestGroups } from "../services/testGroupService";
 const TestCategories = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
+  const limit = 9; // Items per page
 
   useEffect(() => {
-    fetchTestGroups()
+    setLoading(true);
+    fetchTestGroups(page, limit)
       .then((data) => {
-        setCategories(data);
+        setCategories(data.data);
+        setTotalPages(data.totalPages);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [page]);
 
   return (
     <div className="container-fluid px-0 mt-4">
@@ -62,6 +67,29 @@ const TestCategories = () => {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="d-flex justify-content-center mt-3">
+              <button
+                className="btn btn-outline-primary me-2"
+                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                disabled={page === 1}
+              >
+                Previous
+              </button>
+              <span className="align-self-center">
+                Page {page} of {totalPages}
+              </span>
+              <button
+                className="btn btn-outline-primary ms-2"
+                onClick={() =>
+                  setPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={page === totalPages}
+              >
+                Next
+              </button>
             </div>
           </div>
         )}

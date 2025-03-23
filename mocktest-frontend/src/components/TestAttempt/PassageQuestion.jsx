@@ -6,12 +6,14 @@ const PassageQuestion = ({ passage, userAnswers, onSaveAnswer, onClear }) => {
   if (!passage) return null;
 
   return (
-    <div className="w-100 p-4 bg-white z-0 rounded">
+    <div className="w-100 bg-white z-0 rounded">
       {/* Passage Section */}
-      <div className="mb-4 p-3 border-bottom">
-        <h3 className="text-primary">Passage</h3>
+      <div className="mb-4 border-bottom">
         {passage.content_type === "text" ? (
-          <p className="mt-2">{passage.content}</p>
+          <p
+            className="mt-2"
+            dangerouslySetInnerHTML={{ __html: passage.content }}
+          />
         ) : (
           <img
             src={passage.content}
@@ -22,7 +24,7 @@ const PassageQuestion = ({ passage, userAnswers, onSaveAnswer, onClear }) => {
       </div>
 
       {/* Questions Under the Passage */}
-      <div className="d-flex flex-column gap-3 w-100">
+      <div className="d-flex flex-column gap-2 w-100">
         {passage.questions?.map((question) => (
           <div key={question.id} className="p-3 border rounded w-100">
             {/* Fill in the Blank */}

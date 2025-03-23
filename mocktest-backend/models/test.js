@@ -11,7 +11,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-
       duration: {
         type: DataTypes.INTEGER,
         allowNull: true,
@@ -26,9 +25,14 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       negative: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: true,
-        defaultValue: 0,
+        defaultValue: 0.0,
+      },
+      publish: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
       },
     },
     {

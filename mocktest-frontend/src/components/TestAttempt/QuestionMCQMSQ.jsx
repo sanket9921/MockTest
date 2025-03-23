@@ -70,13 +70,16 @@ const QuestionMCQMSQ = ({ question, onSaveAnswer, onClear }) => {
             {/* Option Text or Image */}
             <div className="flex-grow-1">
               {option.content_type === "text" ? (
-                <span className="w-100">{option.content}</span>
+                <p
+                  className="w-100"
+                  dangerouslySetInnerHTML={{ __html: option.content }}
+                />
               ) : (
                 <img
                   src={option.content}
                   alt="Option"
-                  className="img-fluid w-100"
-                  style={{ maxHeight: "50px", objectFit: "contain" }}
+                  className="img-fluid"
+                  style={{ maxHeight: "250px", objectFit: "contain" }}
                 />
               )}
             </div>

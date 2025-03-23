@@ -1,4 +1,5 @@
 import React from "react";
+import RichTextEditor from "../../common/RichTextEditor";
 
 const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
   const toggleQuestionType = () => {
@@ -53,12 +54,9 @@ const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
 
       {/* Question Input */}
       {question.contentType === "text" ? (
-        <input
-          className="form-control mb-2"
+        <RichTextEditor
           value={question.content}
-          onChange={(e) =>
-            updateQuestion(question.id, { content: e.target.value })
-          }
+          onChange={(value) => updateQuestion(question.id, { content: value })}
           placeholder="Enter the Question"
         />
       ) : (
@@ -72,6 +70,7 @@ const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
       )}
 
       {/* Marks Input */}
+      <label className="form-label mt-2">Marks</label>
       <input
         className="form-control mb-2"
         type="number"
@@ -89,17 +88,21 @@ const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
             onChange={() => toggleCorrectAnswer(index)}
             className="form-check-input"
           />
-          <input
-            className="form-control"
+
+          {/* Option Input (Using RichTextEditor) */}
+          <RichTextEditor
             value={opt.content}
-            onChange={(e) => updateOption(index, e.target.value)}
-            placeholder="Option content"
+            onChange={(value) => updateOption(index, value)}
+            placeholder="Enter option content"
           />
+
+          {/* Remove Option Button */}
           <div
             className="text-danger text-bold"
             onClick={() => removeOption(index)}
+            role="button"
           >
-            <i className="bi bi-x-lg"></i> {/* Bootstrap Trash Icon */}
+            <i className="bi bi-x-lg"></i>
           </div>
         </div>
       ))}
@@ -112,13 +115,12 @@ const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
         <i className="bi bi-plus-circle me-2"></i> Add Option
       </button>
 
-      {/* Explanation Input */}
-      <textarea
-        className="form-control mb-2"
-        rows="3"
+      {/* Explanation Input (Using RichTextEditor) */}
+      <label className="form-label">Explanation</label>
+      <RichTextEditor
         value={question.explanation}
-        onChange={(e) =>
-          updateQuestion(question.id, { explanation: e.target.value })
+        onChange={(value) =>
+          updateQuestion(question.id, { explanation: value })
         }
         placeholder="Enter explanation..."
       />
@@ -126,7 +128,7 @@ const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
       {/* Remove Question Button */}
       <button
         onClick={() => removeQuestion(question.id)}
-        className="btn btn-danger d-flex align-items-center"
+        className="btn btn-danger d-flex align-items-center mt-2"
       >
         <i className="bi bi-trash me-2"></i> Remove Question
       </button>

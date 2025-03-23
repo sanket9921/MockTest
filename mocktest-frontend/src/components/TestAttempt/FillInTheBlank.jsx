@@ -3,7 +3,10 @@ import React from "react";
 const FillInTheBlank = ({ question, onSaveAnswer, onClear }) => {
   return (
     <div className="mt-3 z-0 w-100">
-      <h5 className="mb-2">{question.content}</h5>
+      <p
+        className="w-100"
+        dangerouslySetInnerHTML={{ __html: question?.content }}
+      />
       <input
         type="text"
         className="form-control w-100 mb-2"

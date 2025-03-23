@@ -1,9 +1,10 @@
 const { models } = require("../models");
-const { Op, Sequelize } = require("sequelize");
+const { Op, Sequelize, where } = require("sequelize");
 
 exports.startTestAttempt = async (req, res) => {
   const { testId } = req.params;
-  const userId = req.body.user_id;
+  const userId = req.user.user.userId;
+  console.log(req.user);
 
   if (!testId || !userId) {
     return res
@@ -470,91 +471,127 @@ exports.submitTest = async (req, res) => {
     const attempt = await models.TestAttempt.findByPk(attemptId, {
       include: [{ model: models.UserAnswer }],
     });
-
     if (!attempt) {
       return res.status(404).json({ message: "Attempt not found" });
     }
+    // Fetch the associated test to get total marks and negative marking
 
-    let marksGained = 0;
-    let negativeMarks = 0;
-    let attemptedQuestions = 0;
-    let totalMarks = 0;
+    const test = await models.Test.findByPk(attempt.test_id);
+
+    if (!test) {
+      return res.status(404).json({ message: "Test not found" });
+    }
+    const userAnswersMap = new Map();
 
     for (const answer of attempt.UserAnswers) {
-      const question = await models.Question.findByPk(answer.question_id);
-      if (!question) continue;
+      if (!userAnswersMap.has(answer.question_id)) {
+        userAnswersMap.set(answer.question_id, []);
+      }
 
-      totalMarks += question.marks; // Add to total possible marks
-      attemptedQuestions++; // Count attempted questions
+      if (answer.option_id !== null) {
+        // Store multiple options in an array
+        userAnswersMap.get(answer.question_id).push(answer.option_id);
+      } else {
+        // Store FIB answer as a string
+        userAnswersMap.set(answer.question_id, answer.fib_answer);
+      }
+    }
 
+    const correctAnswersMap = new Map();
+
+    const questions = await models.Question.findAll({
+      where: { test_id: attempt.test_id },
+    });
+
+    for (const question of questions) {
       if (
-        question.type === "single_choice" ||
-        question.type === "multiple_choice"
+        question.type === "multiple_choice" ||
+        question.type === "single_choice"
       ) {
         const correctOptions = await models.AnswersMCQMSQ.findAll({
           where: { question_id: question.id },
         });
         const correctOptionIds = correctOptions.map((opt) => opt.option_id);
-
-        if (question.type === "single_choice") {
-          if (correctOptionIds.includes(answer.option_id)) {
-            marksGained += question.marks; // Award marks for correct answer
-          } else {
-            negativeMarks += question.negative_marks || 0; // Deduct negative marks if applicable
-          }
-        } else if (question.type === "multiple_choice") {
-          const userSelectedOptions = await models.UserAnswer.findAll({
-            where: { attempt_id: attempt.id, question_id: question.id },
-          });
-          const userOptionIds = userSelectedOptions.map((ans) => ans.option_id);
-
-          if (
-            JSON.stringify(userOptionIds.sort()) ===
-            JSON.stringify(correctOptionIds.sort())
-          ) {
-            marksGained += question.marks; // Award full marks if all selected options are correct
-          } else {
-            negativeMarks += question.negative_marks || 0; // Deduct negative marks for wrong selection
-          }
-        }
+        correctAnswersMap.set(question.id, correctOptionIds);
       } else if (question.type === "fill_in_the_blank") {
         const correctAnswer = await models.AnswersFib.findOne({
           where: { question_id: question.id },
         });
-
-        if (
-          correctAnswer &&
-          correctAnswer.correctTextAnswer.toLowerCase() ===
-            answer.fib_answer.toLowerCase()
-        ) {
-          marksGained += question.marks; // Award marks for correct answer
-        } else {
-          negativeMarks += question.negative_marks || 0; // Deduct negative marks if wrong
+        if (correctAnswer) {
+          correctAnswersMap.set(question.id, correctAnswer.correctTextAnswer);
         }
       }
     }
 
-    // Subtract negative marks from gained marks
-    const finalScore = Math.max(0, marksGained - negativeMarks);
+    let marksGained = 0;
+    let negativeMarks = 0;
 
-    // Update the attempt with calculated values
+    // Loop through user answers
+    for (const [questionId, userResponse] of userAnswersMap.entries()) {
+      const question = await models.Question.findByPk(questionId);
+
+      if (!question) continue; // Skip if question is not found
+
+      const correctAnswer = correctAnswersMap.get(questionId);
+
+      if (question.type === "single_choice") {
+        // Single Choice: Check if selected option matches the correct one
+        if (correctAnswer.includes(userResponse[0])) {
+          marksGained += question.marks;
+        } else {
+          negativeMarks += test.negative; // Apply test-level negative marking
+        }
+      } else if (question.type === "multiple_choice") {
+        // Multiple Choice: Compare selected options with correct ones
+        const userSelectedOptions = new Set(userResponse);
+        const correctOptionIds = new Set(correctAnswer);
+
+        if (
+          userSelectedOptions.size === correctOptionIds.size &&
+          [...userSelectedOptions].every((opt) => correctOptionIds.has(opt))
+        ) {
+          marksGained += question.marks; // Fully correct, gain marks
+        } else {
+          negativeMarks += test.negative; // Deduct once per wrong question
+        }
+      } else if (question.type === "fill_in_the_blank") {
+        // Fill-in-the-blank: Compare case-insensitive answer
+        if (userResponse && correctAnswer) {
+          if (correctAnswer.toLowerCase() === userResponse.toLowerCase()) {
+            marksGained += question.marks;
+          } else {
+            negativeMarks += test.negative;
+          }
+        }
+      }
+    }
+
+    // Calculate final score
+    const finalScore = marksGained - negativeMarks;
+
+    console.log(userAnswersMap);
+    console.log(correctAnswersMap);
+    console.log(marksGained);
+    console.log(negativeMarks);
+    console.log(finalScore);
+
     await attempt.update({
-      total_marks: totalMarks,
+      total_marks: test.totalMarks, // Use totalMarks from the Test model
       marks_gained: marksGained,
       negative_marks: negativeMarks,
-      final_score: finalScore, // New column for final score after deduction
-      attempted_questions: attemptedQuestions,
+      final_score: finalScore, // Final score after deduction
+      attempted_questions: userAnswersMap.size,
       status: "completed",
       end_time: new Date(),
     });
 
     res.json({
       message: "Test submitted successfully",
-      total_marks: totalMarks,
+      total_marks: test.totalMarks, // Use totalMarks from the Test model
       marks_gained: marksGained,
       negative_marks: negativeMarks,
       final_score: finalScore, // Final score after subtracting negative marks
-      attempted_questions: attemptedQuestions,
+      attempted_questions: userAnswersMap.size,
     });
   } catch (error) {
     console.error("Error submitting test:", error);
@@ -617,10 +654,10 @@ exports.getTestAttemptStats = async (req, res) => {
 exports.getTestResult = async (req, res) => {
   try {
     const { attemptId } = req.params;
-
+    const userId = req.user.user.userId;
     // Fetch the test attempt (with pre-calculated stats)
     const testAttempt = await models.TestAttempt.findOne({
-      where: { id: attemptId },
+      where: { id: attemptId, user_id: userId },
       attributes: [
         "test_id",
         "total_marks",
@@ -634,6 +671,8 @@ exports.getTestResult = async (req, res) => {
     if (!testAttempt) {
       return res.status(404).json({ message: "Test attempt not found" });
     }
+
+    const test = await models.Test.findByPk(testAttempt.test_id);
 
     // Fetch all questions (order maintained)
     const questions = await models.Question.findAll({
@@ -716,6 +755,9 @@ exports.getTestResult = async (req, res) => {
         options: questionData.options,
         explanation: questionData.explanation,
         correctAnswers: correctAnswers,
+        fib_answer: questionData.fib_answer
+          ? questionData.fib_answer.correctTextAnswer
+          : null,
         userAnswer: userAnswerData,
         markedForReview: isMarkedForReview,
       };
@@ -741,9 +783,11 @@ exports.getTestResult = async (req, res) => {
     res.status(200).json({
       success: true,
       data: structuredQuestions,
+      test: test,
       stats: {
         total_marks: testAttempt.total_marks,
         marks_gained: testAttempt.marks_gained,
+        total_questions: questions.length,
         attempted_questions: testAttempt.attempted_questions,
         final_score: testAttempt.final_score,
         negative_marks: testAttempt.negative_marks,
@@ -752,5 +796,79 @@ exports.getTestResult = async (req, res) => {
   } catch (error) {
     console.error("Error fetching test result:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.getInProgressTests = async (req, res) => {
+  try {
+    const userId = req.user?.user?.userId; // Extract user ID from request
+
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User ID is required" });
+    }
+
+    const inProgressTests = await models.TestAttempt.findAll({
+      where: { status: "in_progress", user_id: userId },
+      include: {
+        model: models.Test,
+        attributes: ["id", "name", "duration", "totalMarks", "difficulty"],
+      },
+    });
+
+    return res.status(200).json({ success: true, data: inProgressTests });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+exports.getCompletedTests = async (req, res) => {
+  try {
+    const userId = req.user?.user?.userId; // Extract user ID from request
+
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User ID is required" });
+    }
+
+    // Pagination parameters
+    let { page, limit } = req.query;
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 8; // Default: 8 tests per page
+    const offset = (page - 1) * limit;
+
+    // Get total count of completed tests
+    const totalCount = await models.TestAttempt.count({
+      where: { status: "completed", user_id: userId },
+    });
+
+    // Fetch paginated completed tests
+    const completedTests = await models.TestAttempt.findAll({
+      where: { status: "completed", user_id: userId },
+      include: {
+        model: models.Test,
+        attributes: ["id", "name", "duration", "totalMarks", "difficulty"],
+      },
+      limit,
+      offset,
+    });
+
+    return res.status(200).json({
+      success: true,
+      total: totalCount,
+      page,
+      limit,
+      totalPages: Math.ceil(totalCount / limit),
+      data: completedTests,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error", error: error.message });
   }
 };

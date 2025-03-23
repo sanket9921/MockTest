@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import QuestionForm from "./QuestionForm";
 import { submitPassageWithQuestions } from "../../../services/questionService";
+import RichTextEditor from "../../common/RichTextEditor";
 
 const PassageForm = ({ testId }) => {
   const [passage, setPassage] = useState({ content: "", contentType: "text" });
@@ -89,16 +90,13 @@ const PassageForm = ({ testId }) => {
 
       {/* Passage Input */}
       <div className="mb-4 p-4 bg-white shadow-sm rounded">
-        <button onClick={togglePassageType} className="btn btn-primary mb-2">
-          Switch to {passage.contentType === "text" ? "Image" : "Text"}
+        <button onClick={togglePassageType} className="btn btn-secondary mb-2">
+          {passage.contentType === "text" ? "Image" : "Text"}
         </button>
         {passage.contentType === "text" ? (
-          <textarea
-            className="form-control"
+          <RichTextEditor
             value={passage.content}
-            onChange={(e) =>
-              setPassage({ ...passage, content: e.target.value })
-            }
+            onChange={(value) => setPassage({ ...passage, content: value })}
             placeholder="Enter the passage"
           />
         ) : (

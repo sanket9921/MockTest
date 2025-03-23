@@ -13,10 +13,13 @@ const OptionItem = ({ option, onAction }) => {
             src={option.content}
             alt="Option"
             className="img-thumbnail"
-            style={{ width: "80px", height: "80px" }}
+            style={{ width: "250px", height: "250px" }}
           />
         ) : (
-          <span>{option.content}</span>
+          <p
+            className="mb-0"
+            dangerouslySetInnerHTML={{ __html: option.content }}
+          />
         )}
       </span>
       <MenuDropdown

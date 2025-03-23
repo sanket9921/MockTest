@@ -29,7 +29,7 @@ const QuestionItem = ({ question, onAction, parentAccordion, index }) => {
                 src={question.content}
                 alt="Question"
                 className="img-fluid"
-                style={{ maxHeight: "50px" }}
+                // style={{ maxHeight: "50px" }}
               />
             ) : (
               <p

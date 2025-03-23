@@ -7,7 +7,7 @@ const PassageItem = ({ passage, onAction }) => {
   return (
     <div className="accordion-item">
       {/* Custom Accordion Header */}
-      <h2 className="accordion-header">
+      <div className="accordion-header">
         <div
           className="d-flex w-100 justify-content-between align-items-center p-3"
           data-bs-toggle="collapse"
@@ -19,7 +19,10 @@ const PassageItem = ({ passage, onAction }) => {
             {passage.content_type === "image" ? (
               <img src={passage.content} alt="Passage" className="img-fluid" />
             ) : (
-              passage.content
+              <p
+                className="mb-0"
+                dangerouslySetInnerHTML={{ __html: passage.content }}
+              />
             )}
           </span>
 
@@ -31,7 +34,7 @@ const PassageItem = ({ passage, onAction }) => {
             />
           </div>
         </div>
-      </h2>
+      </div>
 
       <div id={passageId} className="accordion-collapse collapse">
         <div className="accordion-body accordion" id={passageId + "-questions"}>

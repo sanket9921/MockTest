@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-const QuestionCard = ({ question }) => {
+const QuestionCard = ({ question, negative_marks }) => {
   const {
     content,
     content_type,
@@ -13,6 +13,27 @@ const QuestionCard = ({ question }) => {
     fib_answer,
   } = question;
 
+  const isUnattempted =
+    !userAnswer ||
+    (Array.isArray(userAnswer) && userAnswer.length === 0) ||
+    (type === "fill_in_the_blank" &&
+      (typeof userAnswer !== "string" || userAnswer.trim() === "")); // Ensure userAnswer is a string before calling trim
+
+  const correctOptionIds = options
+    .filter((option) => option.correct_answer !== null)
+    .map((option) => option.id);
+
+  const isCorrect =
+    !isUnattempted &&
+    (type === "fill_in_the_blank"
+      ? typeof userAnswer === "string" &&
+        userAnswer.trim() === fib_answer.replace(/"/g, "").trim() // Ensure userAnswer is a string before using trim
+      : Array.isArray(userAnswer) &&
+        userAnswer.length === correctOptionIds.length &&
+        correctOptionIds.every((id) => userAnswer.includes(id)));
+
+  const isIncorrect = !isCorrect && !isUnattempted;
+
   return (
     <div className="border p-4 rounded shadow-sm bg-white">
       {/* Question Content */}
@@ -20,24 +41,31 @@ const QuestionCard = ({ question }) => {
         <img
           src={content}
           alt="Question"
-          className="w-100 rounded d-block mx-auto"
-          style={{ maxWidth: "400px" }}
+          className=" img-fluid rounded d-block p-2"
+          // style={{ maxWidth: "400px" }}
         />
       ) : (
-        <h4 className="fw-semibold">
-          {content} <span className="text-muted">({marks} Marks)</span>
-        </h4>
+        <p className="mt-2" dangerouslySetInnerHTML={{ __html: content }} />
       )}
 
       {/* Marked for Review */}
       {markedForReview && (
         <p className="text-warning fw-semibold mt-2">⚠ Marked for Review</p>
       )}
+      {isUnattempted ? (
+        <span className="text-muted fw-bold">➖ 0 Marks</span>
+      ) : isCorrect ? (
+        <span className="text-success fw-bold">✔ +{marks} Marks</span>
+      ) : (
+        <span className="text-danger fw-bold">
+          ✖ -{negative_marks || 0} Marks
+        </span>
+      )}
 
       {/* Fill in the Blank Question Handling */}
       {type === "fill_in_the_blank" && fib_answer ? (
         <div className="mt-3">
-          {userAnswer === fib_answer.correctTextAnswer.replace(/"/g, "") ? (
+          {userAnswer === fib_answer.replace(/"/g, "") ? (
             <p className="p-2 rounded bg-success text-white">{userAnswer}</p>
           ) : (
             <>
@@ -45,7 +73,7 @@ const QuestionCard = ({ question }) => {
                 Your Answer: {userAnswer}
               </p>
               <p className="p-2 rounded bg-success text-white">
-                Correct Answer: {fib_answer.correctTextAnswer.replace(/"/g, "")}
+                Correct Answer: {fib_answer.replace(/"/g, "")}
               </p>
             </>
           )}
@@ -61,15 +89,24 @@ const QuestionCard = ({ question }) => {
             return (
               <div
                 key={option.id}
-                className={`p-2 rounded ${
+                className={`p-2 custom-border my-1 rounded ${
                   isCorrect
-                    ? "bg-success text-white"
+                    ? "bg-success text-white option-correct" // Correct answer
                     : isIncorrect
-                    ? "bg-danger text-white"
-                    : "bg-light"
+                    ? "bg-danger text-white option-incorrect" // Incorrect answer
+                    : "bg-light text-dark option-default" // Default styling
                 }`}
               >
-                {option.content}
+                {option.content_type === "image" ? (
+                  <img
+                    src={option.content}
+                    alt="Option"
+                    className="rounded d-block p-2"
+                    style={{ maxWidth: "250px" }}
+                  />
+                ) : (
+                  <span dangerouslySetInnerHTML={{ __html: option.content }} />
+                )}
               </div>
             );
           })}
@@ -78,9 +115,13 @@ const QuestionCard = ({ question }) => {
 
       {/* Explanation */}
       {explanation && (
-        <p className="mt-3 text-muted">
-          <strong>Explanation:</strong> {explanation}
-        </p>
+        <span>
+          <strong>Explanation:</strong>
+          <p
+            className="text-muted"
+            dangerouslySetInnerHTML={{ __html: explanation }}
+          />
+        </span>
       )}
     </div>
   );

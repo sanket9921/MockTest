@@ -73,12 +73,20 @@ const TestAttemptLayout = ({ attemptId }) => {
   if (questions.length === 0) return <p>Loading...</p>;
 
   return (
-    <div className="container-fluid my-5 mx-auto w-full">
-      {/* Main Content */}
-      <div className="d-flex justify-content-between gap-3">
-        {/* Left Section - Question Display */}
-        <div className="flex-grow-1">
-          {/* Timer & Marking Info inside Question Display */}
+    <div className="container my-5 mx-auto">
+      {/* Show Question Navigator in horizontal scroll mode for small screens */}
+      <div className="d-block d-md-none w-100 overflow-auto">
+        <QuestionNavigator
+          questions={questions}
+          currentQuestionIndex={currentQuestionIndex}
+          onNavigate={handleQuestionNavigation}
+        />
+      </div>
+
+      {/* Main Layout - 70-30 Split for Medium & Large Screens */}
+      <div className="row g-3">
+        {/* Left Section - 70% width on medium & large screens */}
+        <div className="col-12 col-md-8">
           <div className="d-flex justify-content-between align-items-center mb-3">
             {/* Timer on the Left */}
             <div>
@@ -105,14 +113,14 @@ const TestAttemptLayout = ({ attemptId }) => {
 
           {/* Fixed Navigation Buttons inside Question Display Column */}
           <div className="position-fixed bottom-0 start-0 w-100 d-flex justify-content-center">
-            <div className="w-75 bg-white p-3 border-top d-flex justify-content-between">
+            <div className="custom-width bg-white p-3 d-flex justify-content-between">
               {/* Previous Button (Left-Aligned) */}
               <button
                 onClick={() =>
                   handleQuestionNavigation(currentQuestionIndex - 1)
                 }
                 disabled={currentQuestionIndex === 0}
-                className="btn btn-secondary"
+                className="btn btn-fluid btn-secondary"
               >
                 Previous
               </button>
@@ -120,7 +128,7 @@ const TestAttemptLayout = ({ attemptId }) => {
               {/* Mark for Review Button (Centered) */}
               <button
                 onClick={handleMarkForReview}
-                className="btn btn-warning mx-auto"
+                className="btn text-black fs-6 bg-lightblue mx-auto"
               >
                 {questions[currentQuestionIndex]?.markedForReview
                   ? "Unmark Review"
@@ -138,32 +146,26 @@ const TestAttemptLayout = ({ attemptId }) => {
                   onClick={() =>
                     handleQuestionNavigation(currentQuestionIndex + 1)
                   }
-                  className="btn btn-primary"
+                  className="btn btn-primary "
                 >
-                  Next
+                  <span>
+                    Next
+                    <i class="bi bi-arrow-right"></i>
+                  </span>
                 </button>
               )}
             </div>
           </div>
         </div>
 
-        {/* Right Section - Question Navigator (Only on Large Screens) */}
-        <div className="d-none d-md-block">
+        {/* Right Section - 30% width on medium & large screens (Hidden on Small Screens) */}
+        <div className="col-md-4 d-none d-md-block">
           <QuestionNavigator
             questions={questions}
             currentQuestionIndex={currentQuestionIndex}
             onNavigate={handleQuestionNavigation}
           />
         </div>
-      </div>
-
-      {/* Show Question Navigator in horizontal scroll mode for small screens */}
-      <div className="d-block d-md-none w-100 overflow-auto mt-3">
-        <QuestionNavigator
-          questions={questions}
-          currentQuestionIndex={currentQuestionIndex}
-          onNavigate={handleQuestionNavigation}
-        />
       </div>
     </div>
   );

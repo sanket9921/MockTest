@@ -41,5 +41,7 @@ router.get(
 router.post("/attempts/:attemptId/answer", testAttemptController.saveAnswer);
 router.post("/attempts/:attemptId/submit", testAttemptController.submitTest);
 router.get("/attempts/:attemptId/result", testAttemptController.getTestResult);
+router.get("/attempts/in-progress", testAttemptController.getInProgressTests);
+router.get("/attempts/testcompleted", testAttemptController.getCompletedTests);
 
 module.exports = router;
