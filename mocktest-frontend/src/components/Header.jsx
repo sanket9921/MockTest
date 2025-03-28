@@ -6,10 +6,6 @@ import { useAuth } from "../context/AuthProvider";
 const Navbar = () => {
   const { isAdmin } = useAuth();
 
-  const onLogOut = () => {
-    console.log("Logged out");
-  };
-
   return (
     <>
       <nav className="container navbar navbar-expand-lg navbar-light bg-white px-3 rounded-pill my-4">
@@ -114,8 +110,8 @@ const Navbar = () => {
                 </a>
                 <ul className="dropdown-menu dropdown-menu-end">
                   <li>
-                    <a className="dropdown-item" href="#" onClick={onLogOut}>
-                      Logout
+                    <a className="dropdown-item" href="#">
+                      Profile
                     </a>
                   </li>
                 </ul>
@@ -201,8 +197,8 @@ const Navbar = () => {
               </li>
             )}
             <li>
-              <a className="nav-link" href="#" onClick={onLogOut}>
-                Logout
+              <a className="nav-link" href="#">
+                Profile
               </a>
             </li>
           </ul>
