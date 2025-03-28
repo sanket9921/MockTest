@@ -28,19 +28,32 @@ exports.getAllTestGroups = async (req, res) => {
     limit = parseInt(limit) || 9;
     const offset = (page - 1) * limit;
 
-    // Count total test groups with at least one published test (if not admin)
+    // Build where condition based on user type
+    const whereCondition = isAdmin ? {} : { publish: true };
+
+    // Count total test groups that meet the conditions
     const totalCount = await models.TestGroup.count({
-      where: isAdmin ? {} : { publish: true },
+      where: whereCondition,
+      include: isAdmin
+        ? []
+        : [
+            {
+              model: models.Test,
+              required: true, // Ensures test groups with at least one published test
+              where: { publish: true },
+            },
+          ],
+      distinct: true, // Avoid duplicate counts due to joins
     });
 
-    // Fetch paginated test groups
+    // Fetch test groups with pagination
     const testGroups = await models.TestGroup.findAll({
-      where: isAdmin ? {} : { publish: true },
+      where: whereCondition,
       include: [
         {
           model: models.Test,
           attributes: [],
-          required: false,
+          required: !isAdmin, // Ensure at least one published test is present for non-admins
           where: isAdmin ? {} : { publish: true },
         },
       ],
@@ -59,9 +72,10 @@ exports.getAllTestGroups = async (req, res) => {
           "testCount",
         ],
       ],
+      group: ["TestGroup.id"], // Avoid duplicate rows
       limit,
       offset,
-      subQuery: false, // Ensures proper pagination
+      subQuery: false,
     });
 
     return res.status(200).json({

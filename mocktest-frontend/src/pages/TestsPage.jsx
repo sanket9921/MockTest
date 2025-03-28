@@ -10,6 +10,7 @@ import {
   updateTest,
   toggleTestPublishStatus,
 } from "../services/testService.";
+import CategoryModal from "../components/CategoryModal";
 
 const TestsPage = () => {
   const { groupId } = useParams();
@@ -19,13 +20,16 @@ const TestsPage = () => {
   const [testCategory, setTestCategory] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [categoryModal, setCategoryModal] = useState(false);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     if (groupId) {
+      setLoading(true);
       getCategoryDetails();
       loadTests(page);
+      setLoading(false);
     }
   }, [groupId, page]);
 
@@ -39,7 +43,6 @@ const TestsPage = () => {
   };
 
   const loadTests = async (pageNumber = 1) => {
-    setLoading(true);
     try {
       const { data, totalPages } = await fetchTestsByGroup(
         groupId,
@@ -51,7 +54,6 @@ const TestsPage = () => {
     } catch (error) {
       console.error("Error fetching tests:", error);
     }
-    setLoading(false);
   };
 
   const handleSaveTest = async (testData) => {
@@ -62,7 +64,7 @@ const TestsPage = () => {
         await createTest({ ...testData, group_id: groupId });
       }
       setModalData(null);
-      loadTests();
+      loadTests(page);
     } catch (error) {
       console.error("Error saving test:", error);
     }
@@ -71,7 +73,7 @@ const TestsPage = () => {
   const handleTogglePublish = async (testId, currentStatus) => {
     try {
       await toggleTestPublishStatus(testId, !currentStatus);
-      loadTests();
+      loadTests(page);
     } catch (error) {
       console.error("Error updating publish status:", error);
     }
@@ -79,13 +81,18 @@ const TestsPage = () => {
 
   return (
     <div className="container my-3">
-      <Navbar />
       <div className="container-fluid mt-4">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div>
             <h1 className="mb-3">{testCategory?.name || "Loading..."}</h1>
             <p>{testCategory?.description || "No description available"}</p>
           </div>
+          <button
+            className="btn btn-primary"
+            onClick={() => setCategoryModal(true)}
+          >
+            Categories
+          </button>
           <button
             className="btn btn-success"
             onClick={() => setModalData({ action: "Add New Test" })}
@@ -194,6 +201,9 @@ const TestsPage = () => {
             onClose={() => setModalData(null)}
             onSave={handleSaveTest}
           />
+        )}
+        {categoryModal && (
+          <CategoryModal onClose={() => setCategoryModal(false)} />
         )}
       </div>
     </div>

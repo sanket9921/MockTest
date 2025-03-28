@@ -1,3 +1,5 @@
+const { updateTotalMarks } = require("../services/testService");
+
 module.exports = (sequelize, DataTypes) => {
   const Passage = sequelize.define(
     "Passage",
@@ -35,5 +37,11 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
+  Passage.afterDestroy(async (passage, options) => {
+    setTimeout(async () => {
+      const models = passage.sequelize.models;
+      await updateTotalMarks(models, passage.test_id);
+    }, 100);
+  });
   return Passage;
 };

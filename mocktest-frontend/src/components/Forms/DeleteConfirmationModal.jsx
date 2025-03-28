@@ -15,7 +15,10 @@ const DeleteConfirmationModal = ({ type, content, onDelete, onClose }) => {
             className="img-fluid border rounded shadow-sm"
           />
         ) : (
-          <p className="p-2 border rounded bg-light">{content}</p>
+          <p
+            className="p-2 border rounded bg-light"
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
         )}
       </div>
 

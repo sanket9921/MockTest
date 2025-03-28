@@ -25,17 +25,23 @@ const QuestionItem = ({ question, onAction, parentAccordion, index }) => {
           {/* Question Content */}
           <span>
             {question.content_type === "image" ? (
-              <img
-                src={question.content}
-                alt="Question"
-                className="img-fluid"
-                // style={{ maxHeight: "50px" }}
-              />
+              <>
+                <img
+                  src={question.content}
+                  alt="Question"
+                  className="img-fluid"
+                  // style={{ maxHeight: "50px" }}
+                />
+                <p>{question.marks}</p>
+              </>
             ) : (
-              <p
-                className="mb-0"
-                dangerouslySetInnerHTML={{ __html: question?.content }}
-              />
+              <>
+                <p
+                  className="mb-0"
+                  dangerouslySetInnerHTML={{ __html: question?.content }}
+                />
+                <p>marks: {question.marks}</p>
+              </>
             )}
           </span>
 

@@ -14,6 +14,7 @@ const optionRoutes = require("./routes/optionsRoutes");
 const correctAnswerRoutes = require("./routes/correctAnswerRoutes");
 const testAttemptRoutes = require("./routes/testAttemptRoutes");
 const passageRoutes = require("./routes/passageRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const authorizeMiddleware = require("./middlewares/authorizeMiddleware");
 // require("dotenv").config();
@@ -48,6 +49,7 @@ app.use("/api/options", optionRoutes);
 app.use("/api/answer", correctAnswerRoutes);
 app.use("/api", testAttemptRoutes);
 app.use("/api/passage", passageRoutes);
+app.use("/api/categories", categoryRoutes);
 app.use("/api", adminRoutes);
 
 // Sync Database

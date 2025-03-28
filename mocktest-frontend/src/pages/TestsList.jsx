@@ -49,7 +49,6 @@ const TestsList = () => {
 
   return (
     <div className="container my-3">
-      <Navbar />
       <div className="container-fluid mt-4">
         <h1 className="mb-3">{testCategory?.name || "Loading..."}</h1>
         <p>{testCategory?.description || "No description available"}</p>

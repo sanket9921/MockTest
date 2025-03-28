@@ -32,6 +32,8 @@ const TestAttemptLayout = ({ attemptId }) => {
     fetchQuestions();
   }, [attemptId]);
 
+  console.log(questions);
+
   const handleSaveAnswer = async (questionId, answer) => {
     await saveUserAnswer(attemptId, questionId, answer);
     fetchQuestions();
@@ -74,6 +76,11 @@ const TestAttemptLayout = ({ attemptId }) => {
 
   return (
     <div className="container my-5 mx-auto">
+      <h2>
+        {questions[currentQuestionIndex].passage_id
+          ? questions[currentQuestionIndex].questions[0].test.name
+          : questions[currentQuestionIndex].test?.name}
+      </h2>
       {/* Show Question Navigator in horizontal scroll mode for small screens */}
       <div className="d-block d-md-none w-100 overflow-auto">
         <QuestionNavigator
@@ -82,7 +89,6 @@ const TestAttemptLayout = ({ attemptId }) => {
           onNavigate={handleQuestionNavigation}
         />
       </div>
-
       {/* Main Layout - 70-30 Split for Medium & Large Screens */}
       <div className="row g-3">
         {/* Left Section - 70% width on medium & large screens */}
@@ -96,10 +102,17 @@ const TestAttemptLayout = ({ attemptId }) => {
             {/* Mark and Negative Mark on the Right */}
             <div className="d-flex">
               <span className="px-3 py-1 text-white rounded-start-pill bg-success d-flex align-items-center gap-1">
-                <i className="bi bi-check"></i> 1
+                <i className="bi bi-check"></i>{" "}
+                {questions[currentQuestionIndex].passage_id
+                  ? questions[currentQuestionIndex].questions[0].marks
+                  : questions[currentQuestionIndex].marks}{" "}
               </span>
               <span className="px-3 py-1 text-white rounded-end-pill bg-danger d-flex align-items-center gap-1">
-                <i className="bi bi-x"></i> 0
+                <i className="bi bi-x"></i>{" "}
+                {questions[currentQuestionIndex].passage_id
+                  ? questions[currentQuestionIndex].questions[0].test
+                      ?.negative ?? 0
+                  : questions[currentQuestionIndex].test?.negative ?? 0}
               </span>
             </div>
           </div>

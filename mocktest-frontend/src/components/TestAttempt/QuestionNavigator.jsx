@@ -6,26 +6,22 @@ const QuestionNavigator = ({ questions, currentQuestionIndex, onNavigate }) => {
 
     if (question.passage_id) {
       // If it's a passage-based question, check all related questions
-      const hasAnswered = question.questions.some(
+      const allAnswered = question.questions.every(
         (q) => q.userAnswer?.length > 0
-      );
-      const isPartiallyAnswered = question.questions.some(
-        (q) => q.isPartiallyAnswered
       );
       const isMarkedForReview = question.questions.some(
         (q) => q.markedForReview
       );
 
       if (isMarkedForReview) bgColor = "bg-purple"; // Purple for review
-      else if (isPartiallyAnswered)
-        bgColor = "bg-warning"; // Yellow for partially answered
-      else if (hasAnswered) bgColor = "bg-success"; // Green for answered
+      else if (allAnswered) bgColor = "bg-success"; // Green if all are answered
+      else bgColor = "bg-warning"; // Yellow if some are unanswered
     } else {
       // Single standalone question
       if (question.markedForReview) bgColor = "bg-purple"; // Purple for review
-      else if (question.isPartiallyAnswered)
-        bgColor = "bg-warning"; // Yellow for partially answered
-      else if (question.userAnswer?.length > 0) bgColor = "bg-success"; // Green for answered
+      else if (question.userAnswer?.length > 0)
+        bgColor = "bg-success"; // Green if answered
+      else bgColor = "bg-secondary"; // Gray if unanswered
     }
 
     // Highlight the current question in Blue

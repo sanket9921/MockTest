@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import image from "../../assets/image.png";
 import { fetchTestsByGroup } from "../../services/testService.";
 
@@ -76,6 +76,10 @@ const SimilarTest = ({ groupId }) => {
           </div>
         </div>
       ))}
+
+      <div className="text-center text-primary">
+        <Link to={"/testslist/" + groupId}>more</Link>
+      </div>
     </div>
   );
 };

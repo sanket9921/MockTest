@@ -58,7 +58,7 @@ const AddOptionForm = ({ data, onClose }) => {
             className="w-100 mt-2 rounded"
           />
         ) : (
-          <p className="mt-2">{data.content}</p>
+          <p dangerouslySetInnerHTML={{ __html: data.content }} />
         )}
       </div>
 

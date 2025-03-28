@@ -23,7 +23,7 @@ const QuestionList = ({ test, questions, refreshQuestions }) => {
     setModalData({ action, item, type });
   };
 
-  const closeModal = () => {
+  const closeModal = async () => {
     refreshQuestions();
     setModalData(null);
   };
@@ -56,7 +56,7 @@ const QuestionList = ({ test, questions, refreshQuestions }) => {
             </span>
             <span className=" m-0">
               <i className="bi bi-x-circle"></i> Negative{" : "}
-              {test?.negative}{" "}
+              {test?.negative ?? 0}{" "}
             </span>
             <span className=" m-0">
               <i className="bi bi-clipboard-check"></i> Marks{" : "}

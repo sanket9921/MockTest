@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, data } from "react-router-dom";
 import { motion } from "framer-motion";
 import { startTestAttempt } from "../services/testAttemptService";
 import { getTestDetails } from "../services/testService.";
@@ -25,6 +25,7 @@ const RulePage = () => {
     fetchDetails();
   }, [testId]);
 
+  console.log(testDetails);
   const handleStartTest = async () => {
     try {
       const attemptId = await startTestAttempt(testId);
@@ -38,7 +39,6 @@ const RulePage = () => {
 
   return (
     <div className="container my-3">
-      <Navbar />
       <div className="container-fluid custom-border mt-4">
         <h2 className="text-primary text-center mb-3">
           {testDetails.name} - Rules & Instructions
@@ -47,37 +47,35 @@ const RulePage = () => {
         {/* General Instructions */}
         <div className="mb-3">
           <p>
-            <strong>📢 Important Instructions:</strong>
+            <strong>Important Instructions:</strong>
           </p>
           <ul>
+            <li>Read all instructions carefully before starting the test.</li>
             <li>
-              ⚡ Read all instructions carefully before starting the test.
-            </li>
-            <li>
-              ✅ Your answers are saved automatically, no need to submit each
+              Your answers are saved automatically, no need to submit each
               question.
             </li>
             <li>
-              ⏳ If the time runs out, the test will be submitted automatically.
+              If the time runs out, the test will be submitted automatically.
             </li>
             <li>
-              📌 You can move between questions using the{" "}
+              You can move between questions using the{" "}
               <strong>"Previous"</strong> and <strong>"Next"</strong> buttons.
             </li>
             <li>
-              🔄 Use the <strong>"Clear"</strong> button to remove your selected
+              Use the <strong>"Clear"</strong> button to remove your selected
               answer.
             </li>
             <li>
-              ⭐ Use the <strong>"Mark for Review"</strong> button if you want
-              to check the question later.
+              Use the <strong>"Mark for Review"</strong> button if you want to
+              check the question later.
             </li>
             <li>
-              📍 The <strong>Navigation Panel</strong> helps you jump to any
+              The <strong>Navigation Panel</strong> helps you jump to any
               question directly.
             </li>
             <li>
-              📊 The colors in the navigation panel indicate the status of each
+              The colors in the navigation panel indicate the status of each
               question:
             </li>
             <ul>
@@ -98,13 +96,12 @@ const RulePage = () => {
               </li>
             </ul>
             <li>
-              ❌ If negative marking applies, wrong answers will reduce your
-              score.
+              If negative marking applies, wrong answers will reduce your score.
             </li>
-            <li>🚫 Do not refresh or close the browser during the test.</li>
+            <li> Do not refresh or close the browser during the test.</li>
             <li>
-              💡 Once you finish, click the <strong>"Submit Test"</strong>{" "}
-              button to complete the test.
+              Once you finish, click the <strong>"Submit Test"</strong> button
+              to complete the test.
             </li>
           </ul>
         </div>
@@ -112,15 +109,23 @@ const RulePage = () => {
         {/* Test Details */}
         <ul className="list-group mb-4">
           <li className="list-group-item">
-            📌 Total Questions: {testDetails.questionCount}
+            Total Questions: {testDetails.question_count}
           </li>
           {testDetails.duration && (
             <li className="list-group-item">
-              ⏳ Time Limit: {testDetails.duration} mins
+              Time Limit: {testDetails.duration} mins
             </li>
           )}
           <li className="list-group-item">
-            🎯 Total Marks: {testDetails.totalMarks}
+            Total Marks: {testDetails.totalMarks}
+          </li>
+          {testDetails.negative && (
+            <li className="list-group-item">
+              Negative: {testDetails.negative}
+            </li>
+          )}
+          <li className="list-group-item">
+            Difficulty Level: {testDetails.difficulty}
           </li>
         </ul>
         <div className="mt-3">

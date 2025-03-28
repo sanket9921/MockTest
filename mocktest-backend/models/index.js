@@ -11,8 +11,8 @@ const models = {
   TestAttempt: require("./TestAttempt")(sequelize, DataTypes),
   UserAnswer: require("./UserAnswer")(sequelize, DataTypes),
   ReviewStatus: require("./ReviewStatus")(sequelize, DataTypes),
-
   Passage: require("./passage")(sequelize, DataTypes),
+  Category: require("./category")(sequelize, DataTypes),
 };
 
 Object.keys(models).forEach((model) => {

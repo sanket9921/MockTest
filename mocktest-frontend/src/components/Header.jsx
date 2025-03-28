@@ -12,7 +12,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="container navbar navbar-expand-lg navbar-light bg-white px-3 rounded-pill">
+      <nav className="container navbar navbar-expand-lg navbar-light bg-white px-3 rounded-pill my-4">
         <div className="container-fluid d-flex align-items-center justify-content-between">
           {/* Logo */}
           <Link className="navbar-brand d-flex align-items-center" to="/">
@@ -75,16 +75,20 @@ const Navbar = () => {
                 </ul>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="#">
+                <Link className="nav-link" to="/about">
                   About Us
-                </a>
+                </Link>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="#">
+                <Link className="nav-link" to="/contact">
                   Contact Us
-                </a>
+                </Link>
               </li>
-
+              <li className="nav-item">
+                <Link className="nav-link" to="/test-analytics">
+                  Test Analytics
+                </Link>
+              </li>
               {isAdmin && ( // Show Test Category only for admins
                 <li className="nav-item">
                   <Link className="nav-link" to="/test-groups">
@@ -183,6 +187,11 @@ const Navbar = () => {
               <a className="nav-link" href="#">
                 Contact Us
               </a>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/test-analytics">
+                Test Analytics
+              </Link>
             </li>
             {isAdmin && ( // Show Test Category only for admins
               <li className="nav-item">

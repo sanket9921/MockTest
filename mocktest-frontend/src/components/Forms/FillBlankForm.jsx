@@ -21,6 +21,8 @@ const FillBlankForm = ({
   const [question, setQuestion] = useState(defaultQuestion);
   const [correctAnswer, setCorrectAnswer] = useState("");
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false); // 🔹 Loading State
+  const [editorKey, setEditorKey] = useState(Date.now()); // 🔹 Reset RichTextEditor
 
   useEffect(() => {
     if (selectedQuestion) {
@@ -39,7 +41,7 @@ const FillBlankForm = ({
   const validateForm = () => {
     let errors = {};
 
-    if (!question.content && question.content_type === "text") {
+    if (!question.content.trim() && question.content_type === "text") {
       errors.question = "Question text is required.";
     }
     if (question.content_type === "image" && !question.file) {
@@ -48,40 +50,51 @@ const FillBlankForm = ({
     if (!question.marks || question.marks <= 0) {
       errors.marks = "Marks must be greater than zero.";
     }
-    if (!correctAnswer) errors.correctAnswer = "Answer is required";
+    if (!correctAnswer.trim()) {
+      errors.correctAnswer = "Answer is required.";
+    }
 
     setErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const resetForm = () => {
-    setQuestion(defaultQuestion);
+    setQuestion({ ...defaultQuestion });
     setCorrectAnswer("");
     setSelectedQuestion(null);
+    setEditorKey(Date.now()); // 🔹 Force RichTextEditor Reset
   };
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
-    const formData = new FormData();
-    formData.append("test_id", testId);
-    formData.append("question_type", "fill_in_the_blank");
-    formData.append("marks", question.marks);
-    formData.append("negativeMark", question.negative_marks);
-    formData.append("explanation", question.explanation);
+    setLoading(true); // 🔹 Start Loader
 
-    if (question.content_type === "text") {
-      formData.append("content", question.content);
-      formData.append("content_type", "text");
-    } else if (question.content_type === "image" && question.file) {
-      formData.append("questionImage", question.file);
-      formData.append("content_type", "image");
+    try {
+      const formData = new FormData();
+      formData.append("test_id", testId);
+      formData.append("question_type", "fill_in_the_blank");
+      formData.append("marks", question.marks);
+      formData.append("negativeMark", question.negative_marks);
+      formData.append("explanation", question.explanation);
+
+      if (question.content_type === "text") {
+        formData.append("content", question.content);
+        formData.append("content_type", "text");
+      } else if (question.content_type === "image" && question.file) {
+        formData.append("questionImage", question.file);
+        formData.append("content_type", "image");
+      }
+      formData.append("correct_answers", JSON.stringify(correctAnswer));
+
+      await submitQuestion(formData);
+      refreshQuestions();
+      resetForm();
+    } catch (error) {
+      console.error("Error submitting question:", error);
+    } finally {
+      setLoading(false); // 🔹 Stop Loader
     }
-    formData.append("correct_answers", JSON.stringify(correctAnswer));
-
-    await submitQuestion(formData);
-    resetForm();
-    refreshQuestions();
   };
 
   return (
@@ -110,6 +123,7 @@ const FillBlankForm = ({
       <div className="mb-3">
         <label className="form-label">Explanation</label>
         <RichTextEditor
+          key={editorKey} // 🔹 Reset RichTextEditor when form resets
           value={question.explanation}
           onChange={(value) =>
             setQuestion((prevQuestion) => ({
@@ -122,9 +136,24 @@ const FillBlankForm = ({
       </div>
 
       <div className="d-flex gap-2">
-        <button onClick={handleSubmit} className="btn btn-primary">
-          {selectedQuestion ? "Update" : "Submit"}
+        {/* Submit Button with Loader */}
+        <button
+          onClick={handleSubmit}
+          className="btn btn-primary"
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <span className="spinner-border spinner-border-sm me-2"></span>
+              {selectedQuestion ? "Updating..." : "Submitting..."}
+            </>
+          ) : selectedQuestion ? (
+            "Update"
+          ) : (
+            "Submit"
+          )}
         </button>
+
         {selectedQuestion && (
           <button onClick={resetForm} className="btn btn-secondary">
             Cancel

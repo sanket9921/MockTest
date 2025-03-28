@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { updateOption } from "../../services/optionService";
+import RichTextEditor from "../common/RichTextEditor";
 
 const UpdateOptionForm = ({ data, onClose }) => {
   const [contentType, setContentType] = useState(data.content_type);
@@ -24,7 +25,7 @@ const UpdateOptionForm = ({ data, onClose }) => {
       await updateOption(data.id, formData);
       onClose();
     } catch (error) {
-      console.error(error);
+      console.error("Error updating option:", error);
     } finally {
       setLoading(false);
     }
@@ -56,15 +57,13 @@ const UpdateOptionForm = ({ data, onClose }) => {
           </button>
         </div>
 
-        {/* Text Input */}
+        {/* Rich Text Editor */}
         {contentType === "text" && (
           <div className="mb-3">
-            <input
-              type="text"
-              className="form-control"
+            <RichTextEditor
               value={text}
-              onChange={(e) => setText(e.target.value)}
-              required
+              onChange={setText}
+              placeholder="Enter text..."
             />
           </div>
         )}

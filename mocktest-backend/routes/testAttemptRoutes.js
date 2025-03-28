@@ -43,5 +43,18 @@ router.post("/attempts/:attemptId/submit", testAttemptController.submitTest);
 router.get("/attempts/:attemptId/result", testAttemptController.getTestResult);
 router.get("/attempts/in-progress", testAttemptController.getInProgressTests);
 router.get("/attempts/testcompleted", testAttemptController.getCompletedTests);
+router.get(
+  "/attempts/top-categories",
+  testAttemptController.getTopCategoriesByTestAttempts
+);
+
+router.get(
+  "/attempts/category-wise-scores",
+  testAttemptController.getCategoryWiseScores
+);
+router.get(
+  "/attempts/category-average-scores",
+  testAttemptController.getCategoryAverageScores
+);
 
 module.exports = router;

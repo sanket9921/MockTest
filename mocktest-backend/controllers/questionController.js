@@ -96,11 +96,29 @@ exports.deleteQuestion = async (req, res) => {
           model: models.Option,
           as: "options",
         },
+        {
+          model: models.Passage, // Check if the question belongs to a passage
+          as: "passageData",
+          include: [
+            {
+              model: models.Question,
+              as: "questions",
+            },
+          ],
+        },
       ],
     });
 
     if (!question)
       return res.status(404).json({ message: "Question not found" });
+
+    // Check if question belongs to a passage and it's the only question
+    if (question.passageData && question.passageData.questions.length === 1) {
+      return res.status(400).json({
+        message: "Cannot delete the only question of a passage",
+      });
+    }
+
     // Delete Question Image from Cloudinary (if exists)
     if (question.content_type === "image" && question.content) {
       const publicId = extractCloudinaryId(question.content);

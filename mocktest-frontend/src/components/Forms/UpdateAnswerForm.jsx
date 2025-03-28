@@ -44,8 +44,12 @@ const UpdateAnswerForm = ({ data, onClose }) => {
       <div className="mb-3">
         <h5 className="fw-bold">Question:</h5>
         {content_type === "text" ? (
-          <p className="border p-2 rounded bg-light">{content}</p>
+          <p
+            className="border p-2 rounded bg-light"
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
         ) : (
+          // <p className="border p-2 rounded bg-light">{content}</p>
           <img src={content} alt="Question" className="img-fluid rounded" />
         )}
       </div>
@@ -70,7 +74,7 @@ const UpdateAnswerForm = ({ data, onClose }) => {
               htmlFor={`option-${option.id}`}
             >
               {option.content_type === "text" ? (
-                option.content
+                <p dangerouslySetInnerHTML={{ __html: option.content }} />
               ) : (
                 <img
                   src={option.content}

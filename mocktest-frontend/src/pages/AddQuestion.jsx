@@ -18,21 +18,22 @@ const AddQuestion = () => {
   }, []);
 
   const fetchTestDetails = async () => {
-    const data = await getTestDetails(testid);
-    setTest(data);
+    setTimeout(async () => {
+      const data = await getTestDetails(testid);
+      setTest(data);
+    }, 100);
   };
 
   // Function to refresh questions
   const refreshQuestions = async () => {
+    fetchTestDetails();
     const data = await fetchQuestionsByTestId(testid);
     setQuestions(data);
   };
 
   return (
     <div className="container-fluid">
-      <div className="my-3">
-        <Navbar />
-      </div>
+      <div className="my-3"></div>
       <div className="row">
         {/* Left Column - Question List (50%) */}
         <div className="col-md-6">

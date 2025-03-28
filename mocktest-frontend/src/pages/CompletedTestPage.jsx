@@ -31,7 +31,6 @@ const CompletedTestsPage = () => {
 
   return (
     <div className="container my-3">
-      <Navbar />
       <div className="container-fluid mt-4">
         <h1 className="mb-3">Completed Tests</h1>
         <p>Check the results of your completed tests.</p>

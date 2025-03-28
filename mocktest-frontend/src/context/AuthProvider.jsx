@@ -16,7 +16,6 @@ export const AuthProvider = ({ children }) => {
         const response = await getAdminIds();
         setAdminIds(response.data.adminIds || []); // ✅ Ensure it's an array
       } catch (error) {
-        console.error("Error fetching admin IDs:", error);
         setAdminIds([]); // ✅ Avoid undefined
       }
     };

@@ -21,7 +21,6 @@ const TestCategories = () => {
   const limit = 9; // Fixed limit of 9 items per page
 
   const getTestGroups = async (pageNumber = 1) => {
-    setLoading(true);
     try {
       const { data, totalPages } = await fetchTestGroups(pageNumber, limit); // Pass limit
       setCategories(data);
@@ -29,10 +28,11 @@ const TestCategories = () => {
     } catch (error) {
       console.error("Error fetching test groups:", error);
     }
-    setLoading(false);
   };
   useEffect(() => {
+    setLoading(true);
     getTestGroups(page);
+    setLoading(false);
   }, [page]);
 
   const handleSave = async (formData) => {
@@ -62,7 +62,6 @@ const TestCategories = () => {
 
   return (
     <div className="container px-0 mt-4">
-      <Navbar />
       <div className="px-2 mt-4">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h1 className="mb-2">Mock Test</h1>

@@ -49,6 +49,18 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "test_id",
       onDelete: "CASCADE",
     });
+
+    // ✅ Fix: Ensure TestAttempt is correctly linked to Test
+    Test.hasMany(models.TestAttempt, {
+      foreignKey: "test_id",
+      onDelete: "CASCADE",
+    });
+
+    // ✅ New Relationship: Test belongs to a Category
+    Test.belongsTo(models.Category, {
+      foreignKey: "category_id",
+      onDelete: "CASCADE",
+    });
   };
 
   return Test;

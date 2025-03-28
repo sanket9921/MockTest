@@ -3,23 +3,33 @@ const { Op, fn, col, literal, Sequelize } = require("sequelize");
 const { models } = require("../models");
 const Test = models.Test;
 
-// Create a new Test
+// Create Test with Category
 exports.createTest = async (req, res) => {
   try {
-    const { name, duration, difficulty, negative, group_id } = req.body;
-    const newTest = await Test.create({
+    const { name, duration, difficulty, negative, group_id, category_id } =
+      req.body;
+
+    // Check if the category exists
+    const category = await models.Category.findByPk(category_id);
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    // Create new test
+    const newTest = await models.Test.create({
       name,
       duration,
       difficulty,
       negative,
       group_id,
+      category_id,
     });
+
     return res.status(201).json(newTest);
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
 };
-
 // Get all Tests
 exports.getAllTests = async (req, res) => {
   try {
@@ -60,22 +70,32 @@ exports.getTestById = async (req, res) => {
   }
 };
 
-// Update a Test by ID
+// Update Test with Category
 exports.updateTest = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, duration, difficulty, negative } = req.body;
+    const { name, duration, difficulty, negative, category_id } = req.body;
 
-    const test = await Test.findByPk(id);
+    // Find test by ID
+    const test = await models.Test.findByPk(id);
     if (!test) {
       return res.status(404).json({ message: "Test not found" });
     }
 
-    // Update the existing test with new values
+    // If category is provided, check if it exists
+    if (category_id) {
+      const category = await models.Category.findByPk(category_id);
+      if (!category) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+    }
+
+    // Update the test
     test.name = name || test.name;
     test.duration = duration ?? null;
     test.difficulty = difficulty || test.difficulty;
     test.negative = negative ?? test.negative;
+    test.category_id = category_id || test.category_id;
 
     await test.save();
 
@@ -84,7 +104,6 @@ exports.updateTest = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
-
 // Delete a Test by ID
 exports.deleteTest = async (req, res) => {
   try {
@@ -116,7 +135,13 @@ exports.getTestByGroupId = async (req, res) => {
       : [];
     const isAdmin = adminIds.includes(userId);
 
-    const { count, rows } = await models.Test.findAndCountAll({
+    // Fetch total count separately to fix count issue with grouping
+    const totalCount = await models.Test.count({
+      where: isAdmin ? { group_id } : { group_id, publish: true },
+    });
+
+    // Fetch paginated test data with a stable order
+    const tests = await models.Test.findAll({
       where: isAdmin ? { group_id } : { group_id, publish: true },
       attributes: {
         include: [
@@ -130,14 +155,15 @@ exports.getTestByGroupId = async (req, res) => {
           ],
         ],
       },
+      order: [["createdAt", "ASC"]], // Ensures stable order to prevent shuffling
       limit,
       offset,
-      group: ["Test.id"], // Avoids issues with aggregation
     });
 
     return res.status(200).json({
-      data: rows,
-      totalPages: Math.ceil(count.length / limit), // Fix total page calculation
+      data: tests,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limit), // Corrected pagination calculation
       currentPage: page,
     });
   } catch (error) {

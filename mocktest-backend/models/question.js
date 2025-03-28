@@ -50,6 +50,7 @@ module.exports = (sequelize, DataTypes) => {
   Question.associate = (models) => {
     Question.belongsTo(models.Test, {
       foreignKey: "test_id",
+      as: "testData",
       onDelete: "CASCADE",
     });
     Question.belongsTo(models.Passage, {

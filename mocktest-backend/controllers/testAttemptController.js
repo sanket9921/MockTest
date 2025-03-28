@@ -4,7 +4,6 @@ const { Op, Sequelize, where } = require("sequelize");
 exports.startTestAttempt = async (req, res) => {
   const { testId } = req.params;
   const userId = req.user.user.userId;
-  console.log(req.user);
 
   if (!testId || !userId) {
     return res
@@ -13,17 +12,26 @@ exports.startTestAttempt = async (req, res) => {
   }
 
   try {
-    // Check if user already has an in-progress attempt
+    // Check if there is an existing in-progress attempt
     const existingAttempt = await models.TestAttempt.findOne({
-      where: { user_id: userId, test_id: testId, status: "in_progress" },
+      where: { user_id: userId, test_id: testId },
+      order: [["createdAt", "DESC"]], // Get the latest attempt
     });
 
     if (existingAttempt) {
-      return res.status(200).json({
-        attemptId: existingAttempt.id,
-        message: "Resuming existing test attempt.",
-      });
+      if (existingAttempt.status === "in_progress") {
+        return res.status(200).json({
+          attemptId: existingAttempt.id,
+          message: "Resuming existing test attempt.",
+        });
+      } else if (existingAttempt.status === "completed") {
+        // If the last attempt is completed, delete it
+        await models.TestAttempt.destroy({
+          where: { id: existingAttempt.id },
+        });
+      }
     }
+
     const test = await models.Test.findByPk(testId);
     const startTime = new Date();
     let endTime = null;
@@ -46,7 +54,7 @@ exports.startTestAttempt = async (req, res) => {
       message: "Test started successfully",
       startTime,
       endTime,
-      hasTimeLimit: !!endTime, // Send a flag to the frontend
+      hasTimeLimit: !!endTime,
     });
   } catch (error) {
     console.error("Error starting test:", error);
@@ -113,6 +121,10 @@ exports.getTestAttemptQuestions = async (req, res) => {
           separate: true,
           order: [["id", "ASC"]],
           attributes: ["id", "question_id", "content", "content_type"], // Exclude correct answers
+        },
+        {
+          model: models.Test,
+          as: "testData",
         },
       ],
     });
@@ -201,6 +213,7 @@ exports.getTestAttemptQuestions = async (req, res) => {
           options: questionData.options, // Options included inside question
           userAnswer: userAnswerData.userAnswer,
           markedForReview,
+          test: questionData.testData,
         });
       } else {
         // Standalone Question
@@ -213,6 +226,7 @@ exports.getTestAttemptQuestions = async (req, res) => {
           options: questionData.options, // Options included
           userAnswer: userAnswerData.userAnswer,
           markedForReview,
+          test: questionData.testData,
         });
       }
     });
@@ -421,8 +435,8 @@ exports.clearAnswer = async (req, res) => {
     }
 
     // Update the answer instead of deleting it
-    await models.UserAnswer.update(
-      { option_id: null, fib_answer: null }, // Set values to null
+    await models.UserAnswer.destroy(
+      // { option_id: null, fib_answer: null }, // Set values to null
       { where: { attempt_id: attemptId, question_id } }
     );
 
@@ -474,31 +488,34 @@ exports.submitTest = async (req, res) => {
     if (!attempt) {
       return res.status(404).json({ message: "Attempt not found" });
     }
-    // Fetch the associated test to get total marks and negative marking
 
+    // Fetch the associated test
     const test = await models.Test.findByPk(attempt.test_id);
-
     if (!test) {
       return res.status(404).json({ message: "Test not found" });
     }
+
     const userAnswersMap = new Map();
 
     for (const answer of attempt.UserAnswers) {
+      if (!answer.question_id) continue; // Skip if question_id is missing
+
       if (!userAnswersMap.has(answer.question_id)) {
         userAnswersMap.set(answer.question_id, []);
       }
 
       if (answer.option_id !== null) {
-        // Store multiple options in an array
-        userAnswersMap.get(answer.question_id).push(answer.option_id);
-      } else {
+        // Ensure it's an array before pushing
+        const existingAnswers = userAnswersMap.get(answer.question_id) || [];
+        existingAnswers.push(answer.option_id);
+        userAnswersMap.set(answer.question_id, existingAnswers);
+      } else if (answer.fib_answer !== null) {
         // Store FIB answer as a string
         userAnswersMap.set(answer.question_id, answer.fib_answer);
       }
     }
 
     const correctAnswersMap = new Map();
-
     const questions = await models.Question.findAll({
       where: { test_id: attempt.test_id },
     });
@@ -526,23 +543,19 @@ exports.submitTest = async (req, res) => {
     let marksGained = 0;
     let negativeMarks = 0;
 
-    // Loop through user answers
     for (const [questionId, userResponse] of userAnswersMap.entries()) {
       const question = await models.Question.findByPk(questionId);
-
       if (!question) continue; // Skip if question is not found
 
       const correctAnswer = correctAnswersMap.get(questionId);
 
       if (question.type === "single_choice") {
-        // Single Choice: Check if selected option matches the correct one
         if (correctAnswer.includes(userResponse[0])) {
           marksGained += question.marks;
         } else {
-          negativeMarks += test.negative; // Apply test-level negative marking
+          negativeMarks += test.negative;
         }
       } else if (question.type === "multiple_choice") {
-        // Multiple Choice: Compare selected options with correct ones
         const userSelectedOptions = new Set(userResponse);
         const correctOptionIds = new Set(correctAnswer);
 
@@ -550,12 +563,11 @@ exports.submitTest = async (req, res) => {
           userSelectedOptions.size === correctOptionIds.size &&
           [...userSelectedOptions].every((opt) => correctOptionIds.has(opt))
         ) {
-          marksGained += question.marks; // Fully correct, gain marks
+          marksGained += question.marks;
         } else {
-          negativeMarks += test.negative; // Deduct once per wrong question
+          negativeMarks += test.negative;
         }
       } else if (question.type === "fill_in_the_blank") {
-        // Fill-in-the-blank: Compare case-insensitive answer
         if (userResponse && correctAnswer) {
           if (correctAnswer.toLowerCase() === userResponse.toLowerCase()) {
             marksGained += question.marks;
@@ -566,20 +578,13 @@ exports.submitTest = async (req, res) => {
       }
     }
 
-    // Calculate final score
     const finalScore = marksGained - negativeMarks;
 
-    console.log(userAnswersMap);
-    console.log(correctAnswersMap);
-    console.log(marksGained);
-    console.log(negativeMarks);
-    console.log(finalScore);
-
     await attempt.update({
-      total_marks: test.totalMarks, // Use totalMarks from the Test model
+      total_marks: test.totalMarks,
       marks_gained: marksGained,
       negative_marks: negativeMarks,
-      final_score: finalScore, // Final score after deduction
+      final_score: finalScore,
       attempted_questions: userAnswersMap.size,
       status: "completed",
       end_time: new Date(),
@@ -587,10 +592,10 @@ exports.submitTest = async (req, res) => {
 
     res.json({
       message: "Test submitted successfully",
-      total_marks: test.totalMarks, // Use totalMarks from the Test model
+      total_marks: test.totalMarks,
       marks_gained: marksGained,
       negative_marks: negativeMarks,
-      final_score: finalScore, // Final score after subtracting negative marks
+      final_score: finalScore,
       attempted_questions: userAnswersMap.size,
     });
   } catch (error) {
@@ -870,5 +875,199 @@ exports.getCompletedTests = async (req, res) => {
     return res
       .status(500)
       .json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+exports.getTopCategoriesByTestAttempts = async (req, res) => {
+  try {
+    const userId = req.user?.user?.userId; // Extract user ID
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized: User ID is missing" });
+    }
+
+    const categoryTestCounts = await models.Category.findAll({
+      attributes: [
+        "id",
+        "category_name",
+        [
+          Sequelize.fn("COUNT", Sequelize.col("Tests->TestAttempts.id")),
+          "test_attempt_count",
+        ],
+      ],
+      include: [
+        {
+          model: models.Test, // Correct association: Category -> Test
+          attributes: [],
+          required: true, // Ensures only categories with tests are counted
+          include: [
+            {
+              model: models.TestAttempt, // Correct association: Test -> TestAttempt
+              attributes: [],
+              required: true, // Ensures only tests with attempts are counted
+              where: { user_id: userId }, // Filter by user ID
+            },
+          ],
+        },
+      ],
+      group: ["Category.id", "Category.category_name"],
+      order: [[Sequelize.literal("test_attempt_count"), "DESC"]],
+      subQuery: false, // Ensures proper query execution
+    });
+
+    res.status(200).json(categoryTestCounts);
+  } catch (error) {
+    console.error("Error fetching top categories:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.getCategoryWiseScores = async (req, res) => {
+  try {
+    const userId = req.user?.user?.userId;
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized: User ID is missing" });
+    }
+
+    const scores = await models.TestAttempt.findAll({
+      attributes: [
+        [Sequelize.col("Test.category_id"), "category_id"],
+        [Sequelize.col("Test->Category.category_name"), "category_name"],
+        [Sequelize.col("Test.difficulty"), "difficulty"],
+        [Sequelize.fn("SUM", Sequelize.col("Test.totalMarks")), "total_marks"],
+        [
+          Sequelize.fn("SUM", Sequelize.col("TestAttempt.final_score")),
+          "final_score",
+        ],
+      ],
+      include: [
+        {
+          model: models.Test,
+          attributes: [],
+          required: true,
+          include: [
+            {
+              model: models.Category,
+              attributes: [],
+              required: true,
+            },
+          ],
+        },
+      ],
+      where: { user_id: userId },
+      group: [
+        "Test.category_id",
+        "Test->Category.category_name",
+        "Test.difficulty",
+      ],
+      raw: true,
+    });
+
+    // 🔹 Ensure consistent difficulty levels (Title Case)
+    function formatDifficulty(difficulty) {
+      if (!difficulty) return "Easy"; // Default case
+      const lower = difficulty.toLowerCase();
+      return lower.charAt(0).toUpperCase() + lower.slice(1);
+    }
+
+    const formattedData = {};
+
+    scores.forEach((row) => {
+      const { category_name, difficulty, total_marks, final_score } = row;
+      const formattedDifficulty = formatDifficulty(difficulty);
+
+      if (!formattedData[category_name]) {
+        formattedData[category_name] = {
+          Easy: { total_marks: 0, final_score: 0 },
+          Medium: { total_marks: 0, final_score: 0 },
+          Hard: { total_marks: 0, final_score: 0 },
+        };
+      }
+
+      formattedData[category_name][formattedDifficulty] = {
+        total_marks: parseFloat(total_marks) || 0,
+        final_score: parseFloat(final_score) || 0,
+      };
+    });
+
+    return res.status(200).json(formattedData);
+  } catch (error) {
+    console.error("Error fetching category-wise scores:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.getCategoryAverageScores = async (req, res) => {
+  try {
+    const userId = req.user.user.userId;
+    let { startDate, endDate } = req.query;
+
+    // Ensure endDate includes the full day (23:59:59)
+    const adjustedEndDate = new Date(endDate);
+    adjustedEndDate.setHours(23, 59, 59, 999);
+
+    // Fetch category-wise average scores by date
+    const scores = await models.TestAttempt.findAll({
+      where: {
+        user_id: userId,
+        end_time: {
+          [Op.between]: [startDate, adjustedEndDate], // Use adjusted end date
+        },
+      },
+      include: [
+        {
+          model: models.Test,
+          attributes: [],
+          include: [
+            { model: models.Category, attributes: ["id", "category_name"] },
+          ],
+        },
+      ],
+      attributes: [
+        [Sequelize.fn("DATE", Sequelize.col("TestAttempt.end_time")), "date"],
+        [
+          Sequelize.fn(
+            "AVG",
+            Sequelize.literal("final_score / total_marks * 100")
+          ),
+          "avgScore",
+        ],
+        [Sequelize.col("Test->Category.id"), "categoryId"],
+        [Sequelize.col("Test->Category.category_name"), "category"],
+      ],
+      group: [
+        Sequelize.col("Test->Category.id"),
+        Sequelize.col("Test->Category.category_name"),
+        Sequelize.fn("DATE", Sequelize.col("TestAttempt.end_time")),
+      ],
+      order: [[Sequelize.literal("date"), "ASC"]],
+      raw: true,
+    });
+
+    // Format data: group scores by category
+    const categoryWiseData = {};
+    scores.forEach(({ date, avgScore, category, categoryId }) => {
+      if (!categoryWiseData[categoryId]) {
+        categoryWiseData[categoryId] = { category, scores: [] };
+      }
+      categoryWiseData[categoryId].scores.push({ date, avgScore });
+    });
+
+    // Extract unique categories from the data
+    const attemptedCategories = Object.values(categoryWiseData).map((cat) => ({
+      id: cat.categoryId,
+      name: cat.category,
+    }));
+
+    return res.json({
+      data: Object.values(categoryWiseData),
+      attemptedCategories, // Only categories that have data
+    });
+  } catch (error) {
+    console.error("Error fetching category-wise average scores:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };

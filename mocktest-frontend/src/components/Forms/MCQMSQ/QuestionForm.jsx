@@ -11,22 +11,22 @@ const QuestionForm = ({
   setOptions,
   correctAnswers,
   setCorrectAnswers,
+  errors,
 }) => {
-  const [errors, setErrors] = useState({});
-
   const handleExplanationChange = (value) => {
     setQuestion((prevQuestion) => ({
       ...prevQuestion,
-      explanation: value, // Directly use the value from Quill
+      explanation: value,
     }));
   };
 
   return (
-    <div className="">
+    <div>
       <div className="row g-3">
         {/* Question Input */}
         <div className="col-12">
           <QuestionInput question={question} setQuestion={setQuestion} />
+          {errors.question && <p className="text-danger">{errors.question}</p>}
         </div>
 
         {/* Options List */}
@@ -67,7 +67,7 @@ const QuestionForm = ({
           <label className="form-label fw-bold">Explanation</label>
           <RichTextEditor
             value={question.explanation}
-            onChange={handleExplanationChange} // Pass corrected function
+            onChange={handleExplanationChange}
           />
         </div>
       </div>

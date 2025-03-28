@@ -1,7 +1,7 @@
 import React from "react";
 import RichTextEditor from "../../common/RichTextEditor";
 
-const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
+const QuestionForm = ({ question, updateQuestion, removeQuestion, errors }) => {
   const toggleQuestionType = () => {
     updateQuestion(question.id, {
       contentType: question.contentType === "text" ? "image" : "text",
@@ -45,12 +45,12 @@ const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
   return (
     <div className="p-3 bg-white shadow-sm rounded mb-3 border">
       {/* Toggle Question Type */}
-      <button
+      {/* <button
         onClick={toggleQuestionType}
         className="btn btn-secondary mb-2 d-flex align-items-center"
       >
         {question.contentType === "text" ? "Image" : "Text"}
-      </button>
+      </button> */}
 
       {/* Question Input */}
       {question.contentType === "text" ? (
@@ -68,6 +68,7 @@ const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
           }
         />
       )}
+      {errors?.content && <p className="text-danger">{errors.content}</p>}
 
       {/* Marks Input */}
       <label className="form-label mt-2">Marks</label>
@@ -78,6 +79,7 @@ const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
         value={question.marks}
         onChange={(e) => updateQuestion(question.id, { marks: e.target.value })}
       />
+      {errors?.marks && <p className="text-danger">{errors.marks}</p>}
 
       {/* Options Section */}
       {question.options.map((opt, index) => (
@@ -106,6 +108,13 @@ const QuestionForm = ({ question, updateQuestion, removeQuestion }) => {
           </div>
         </div>
       ))}
+      {errors?.options && <p className="text-danger">{errors.options}</p>}
+      {errors?.optionContent && (
+        <p className="text-danger">{errors.optionContent}</p>
+      )}
+      {errors?.correctOption && (
+        <p className="text-danger">{errors.correctOption}</p>
+      )}
 
       {/* Add Option Button */}
       <button

@@ -31,9 +31,6 @@ const ResultPage = () => {
     return <p className="text-center text-red-500">No data found.</p>;
   return (
     <>
-      <div className="mt-3">
-        <Navbar />
-      </div>
       <div className="container mx-auto p-6 my-5">
         {/* Test Result Header */}
         <div className="m-6 p-6">

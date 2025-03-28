@@ -69,3 +69,41 @@ export const getCompletedTests = async (page = 1, limit = 8) => {
   });
   return response.data;
 };
+
+export const getTopCategories = async (limit = 5) => {
+  try {
+    const response = await API.get(`attempts/top-categories?limit=${limit}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching top categories:", error);
+    throw error;
+  }
+};
+
+export const getCategoryWiseScores = async (categoryId) => {
+  try {
+    const response = await API.get("/attempts/category-wise-scores", {
+      params: { categoryId },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching category-wise scores:", error);
+    return {
+      Easy: { final_score: 0 },
+      Medium: { final_score: 0 },
+      Hard: { final_score: 0 },
+    };
+  }
+};
+
+export const getCategoryAverageScores = async (startDate, endDate) => {
+  try {
+    const response = await API.get("/attempts/category-average-scores", {
+      params: { startDate, endDate },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching category average scores:", error);
+    return { data: [], attemptedCategories: [] };
+  }
+};

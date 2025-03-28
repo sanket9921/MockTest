@@ -27,7 +27,6 @@ const ResumePage = () => {
 
   return (
     <div className="container my-3">
-      <Navbar />
       <div className="container-fluid mt-4">
         <h1 className="mb-3">Resume Your Tests</h1>
         <p>Resume tests which you didn’t completed.</p>

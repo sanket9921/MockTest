@@ -10,7 +10,6 @@ const permissions = {
   "/api/tests/:id/start": ["user", "admin"], // Users & admins can start tests
 
   "/api/attempts*": ["user", "admin"], // All test attempts endpoints (start, submit, etc.)
-
   //  Admin-Only (handled by middleware)
 };
 
