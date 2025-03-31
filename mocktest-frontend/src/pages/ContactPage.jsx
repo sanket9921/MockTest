@@ -23,12 +23,12 @@ const Contact = () => {
             news, and insights into career planning.
           </p>
           <div className="d-flex justify-content-center gap-3">
-            <a href="#" className="btn btn-primary">
+            {/* <a href="#" className="btn btn-primary">
               <FaFacebook /> Facebook
             </a>
             <a href="#" className="btn btn-info">
               <FaTwitter /> Twitter
-            </a>
+            </a> */}
             <a href="#" className="btn btn-danger">
               <FaInstagram /> Instagram
             </a>

@@ -158,12 +158,7 @@ input:focus, textarea:focus {
     color: var(--tertiary-text-color);
   }
 
-  .bg-purple {
-    background-color: #6f42c1 !important; /* Bootstrap's purple */
-  }
-  .bg-lightblue {
-    background-color: #E3E9F9 !important; /* Light Blue */
-  }
+  
   
   .option-correct *,
   .option-incorrect * {
@@ -258,3 +253,29 @@ input:focus, textarea:focus {
     border-color: #002855 !important;
   }
   
+  .bg-primary {
+    background-color: #3d8bfd !important; /* Slightly lighter blue */
+  }
+  
+  .bg-success {
+    background-color: #50c878 !important; /* Light Green */
+  }
+  
+  .bg-danger {
+    background-color: #e04f5f !important; /* Light Red */
+  }
+  
+  .bg-warning {
+    background-color: #ffcc33 !important; /* Light Yellow */
+  }
+  
+  .bg-secondary {
+    background-color: #8a99a6 !important; /* Light Gray */
+  }
+  
+  .bg-purple {
+    background-color: #9b59b6 !important; /* Bootstrap's purple */
+  }
+  .bg-lightblue {
+    background-color: #E3E9F9 !important; /* Light Blue */
+  }

@@ -85,7 +85,7 @@ const FillBlankForm = ({
         formData.append("questionImage", question.file);
         formData.append("content_type", "image");
       }
-      formData.append("correct_answers", JSON.stringify(correctAnswer));
+      formData.append("correct_answers", correctAnswer);
 
       await submitQuestion(formData);
       refreshQuestions();

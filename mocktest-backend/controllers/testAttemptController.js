@@ -568,8 +568,11 @@ exports.submitTest = async (req, res) => {
           negativeMarks += test.negative;
         }
       } else if (question.type === "fill_in_the_blank") {
-        if (userResponse && correctAnswer) {
-          if (correctAnswer.toLowerCase() === userResponse.toLowerCase()) {
+        if (userResponse !== undefined && correctAnswer !== undefined) {
+          const normalize = (value) =>
+            String(value).replace(/"/g, "").trim().toLowerCase(); // Remove double quotes and normalize
+
+          if (normalize(correctAnswer) === normalize(userResponse)) {
             marksGained += question.marks;
           } else {
             negativeMarks += test.negative;

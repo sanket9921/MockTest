@@ -14,20 +14,26 @@ const QuestionCard = ({ question, negative_marks }) => {
   } = question;
 
   const isUnattempted =
-    !userAnswer ||
+    userAnswer === undefined ||
+    userAnswer === null ||
     (Array.isArray(userAnswer) && userAnswer.length === 0) ||
     (type === "fill_in_the_blank" &&
-      (typeof userAnswer !== "string" || userAnswer.trim() === "")); // Ensure userAnswer is a string before calling trim
+      !(
+        typeof userAnswer[0] === "string" || typeof userAnswer[0] === "number"
+      )) ||
+    String(userAnswer[0]).trim() === "";
 
   const correctOptionIds = options
     .filter((option) => option.correct_answer !== null)
     .map((option) => option.id);
 
+  const normalize = (value) =>
+    String(value).replace(/"/g, "").trim().toLowerCase(); // Function to normalize answers
+
   const isCorrect =
     !isUnattempted &&
     (type === "fill_in_the_blank"
-      ? typeof userAnswer === "string" &&
-        userAnswer.trim() === fib_answer.replace(/"/g, "").trim() // Ensure userAnswer is a string before using trim
+      ? normalize(userAnswer[0]) === normalize(fib_answer) // Use normalization for comparison
       : Array.isArray(userAnswer) &&
         userAnswer.length === correctOptionIds.length &&
         correctOptionIds.every((id) => userAnswer.includes(id)));
@@ -65,7 +71,7 @@ const QuestionCard = ({ question, negative_marks }) => {
       {/* Fill in the Blank Question Handling */}
       {type === "fill_in_the_blank" && fib_answer ? (
         <div className="mt-3">
-          {userAnswer === fib_answer.replace(/"/g, "") ? (
+          {userAnswer[0] === fib_answer.replace(/"/g, "") ? (
             <p className="p-2 rounded bg-success text-white">{userAnswer}</p>
           ) : (
             <>
