@@ -5,7 +5,7 @@
 # Ignore .env file in backend
 /mocktest-backend/.env
 /mocktest-frontend/.env
-
+/mocktest-frontend/.env.production
 # Ignore log files
 *.log
 
