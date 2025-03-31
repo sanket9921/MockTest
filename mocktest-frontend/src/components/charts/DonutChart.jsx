@@ -11,7 +11,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 const generateShades = (baseColor, totalShades) => {
   return Array.from({ length: totalShades }, (_, i) => {
     const factor = 1 - (i / totalShades) * 0.5; // Adjust brightness factor
-    return `rgba(0, 123, 255, ${factor.toFixed(2)})`; // Vary opacity for effect
+    return `rgba(30, 144, 255, ${factor.toFixed(2)})`; // Vary opacity for effect 0, 123, 255
   });
 };
 
@@ -111,7 +111,7 @@ const DonutChart = () => {
               aria-expanded="false"
               style={{ width: "250px" }} // Adjust button width
             >
-              Select Categories
+              Select Category
             </button>
             <ul
               className="dropdown-menu"
@@ -189,11 +189,11 @@ const DonutChart = () => {
               }}
             />
           </div>
+          <h4 className="text-center mt-2">Tests Attempted by Category</h4>
         </>
       ) : (
         <p>No data available</p>
       )}
-      <h4 className="text-center">Test Attempts by Category</h4>
     </div>
   );
 };

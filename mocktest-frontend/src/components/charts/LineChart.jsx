@@ -34,7 +34,6 @@ const LineChart = () => {
 
       const { data, attemptedCategories } = response;
       setApiData(data);
-
       setAllCategories(attemptedCategories);
 
       const top5 = attemptedCategories.slice(0, 5).map((cat) => cat.name);
@@ -71,14 +70,14 @@ const LineChart = () => {
       return {
         label: category,
         data: formattedScores,
-        borderColor: getShadedColor(index, selectedCats.length), // Different shades of #007bff
+        borderColor: getShadedColor(index, selectedCats.length),
         borderWidth: 2,
         fill: false,
-        tension: 0, // Straight lines
-        spanGaps: true, // Connect missing data points
-        pointRadius: 5, // Show dots at intersections
+        tension: 0,
+        spanGaps: true,
+        pointRadius: 5,
         pointHoverRadius: 7,
-        pointBackgroundColor: getShadedColor(index, selectedCats.length), // Dots match line color
+        pointBackgroundColor: getShadedColor(index, selectedCats.length),
         pointHoverBackgroundColor: "#fff",
         pointBorderColor: "#fff",
         pointHoverBorderWidth: 2,
@@ -133,10 +132,51 @@ const LineChart = () => {
   };
 
   return (
-    <div className="">
-      {/* Date Filter */}
-      <div className="row mb-3">
-        <div className="col">
+    <div className="container">
+      {/* Button Aligned to Right */}
+      <div className="d-flex justify-content-end mb-3">
+        <div className="dropdown">
+          <button
+            className="btn btn-primary dropdown-toggle"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            style={{ minWidth: "200px" }}
+          >
+            Select Category
+          </button>
+          <ul
+            className="dropdown-menu p-2"
+            style={{ maxHeight: "200px", overflowY: "auto", minWidth: "200px" }}
+          >
+            {allCategories.length > 0 ? (
+              allCategories.map((cat) => (
+                <li key={cat.id} style={{ padding: "5px 10px" }}>
+                  <label
+                    className="dropdown-item d-flex align-items-center"
+                    style={{ gap: "8px", padding: "5px" }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedCategories.includes(cat.name)}
+                      onChange={() => handleCategoryChange(cat.name)}
+                      className="me-2"
+                      style={{ width: "14px", height: "14px" }}
+                    />
+                    <span style={{ fontSize: "14px" }}>{cat.name}</span>
+                  </label>
+                </li>
+              ))
+            ) : (
+              <li className="p-2 text-muted">No categories available</li>
+            )}
+          </ul>
+        </div>
+      </div>
+
+      {/* Date Inputs (Full Width) */}
+      <div className="d-flex gap-3">
+        <div className="w-100">
           <label>Start Date:</label>
           <input
             type="date"
@@ -145,7 +185,7 @@ const LineChart = () => {
             onChange={(e) => setStartDate(e.target.value)}
           />
         </div>
-        <div className="col">
+        <div className="w-100">
           <label>End Date:</label>
           <input
             type="date"
@@ -154,43 +194,6 @@ const LineChart = () => {
             onChange={(e) => setEndDate(e.target.value)}
           />
         </div>
-      </div>
-
-      {/* Category Selection */}
-      <div className="dropdown mb-3" style={{ float: "right" }}>
-        <button
-          className="btn btn-primary dropdown-toggle"
-          type="button"
-          data-bs-toggle="dropdown"
-          style={{ width: "250px" }} // Adjust width if needed
-        >
-          Select Categories
-        </button>
-        <ul
-          className="dropdown-menu p-2"
-          style={{ maxHeight: "200px", overflowY: "auto", minWidth: "250px" }} // Scrollable and wider dropdown
-        >
-          {allCategories.map((cat) => (
-            <li key={cat.id} style={{ padding: "5px 10px" }}>
-              {" "}
-              {/* Left-align items */}
-              <label
-                className="dropdown-item d-flex align-items-center"
-                style={{ gap: "8px", padding: "5px" }}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedCategories.includes(cat.name)}
-                  onChange={() => handleCategoryChange(cat.name)}
-                  className="me-2"
-                  style={{ width: "14px", height: "14px" }} // Smaller checkbox
-                />
-                <span style={{ fontSize: "14px" }}>{cat.name}</span>{" "}
-                {/* Smaller text */}
-              </label>
-            </li>
-          ))}
-        </ul>
       </div>
 
       {/* Line Chart */}
@@ -202,8 +205,8 @@ const LineChart = () => {
 
 // ✅ Generate different shades of #007bff dynamically
 const getShadedColor = (index, totalShades) => {
-  const factor = 1 - (index / totalShades) * 0.5; // Adjust brightness factor
-  return `rgba(0, 123, 255, ${factor.toFixed(2)})`; // Vary opacity for effect
+  const factor = 1 - (index / totalShades) * 0.5;
+  return `rgba(30, 144, 255, ${factor.toFixed(2)})`;
 };
 
 export default LineChart;

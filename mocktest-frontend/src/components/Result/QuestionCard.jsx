@@ -89,13 +89,15 @@ const QuestionCard = ({ question, negative_marks }) => {
             return (
               <div
                 key={option.id}
-                className={`p-2 custom-border my-1 rounded ${
-                  isCorrect
-                    ? "bg-success text-white option-correct" // Correct answer
+                className="p-2 custom-border my-1 rounded"
+                style={{
+                  backgroundColor: isCorrect
+                    ? "#90EE90" // Light Green for Correct
                     : isIncorrect
-                    ? "bg-danger text-white option-incorrect" // Incorrect answer
-                    : "bg-light text-dark option-default" // Default styling
-                }`}
+                    ? "#ff9999" // Light Red for Incorrect
+                    : "#f8f9fa", // Default Bootstrap Light Gray
+                  color: isCorrect || isIncorrect ? "black" : "black", // Ensures text is readable
+                }}
               >
                 {option.content_type === "image" ? (
                   <img

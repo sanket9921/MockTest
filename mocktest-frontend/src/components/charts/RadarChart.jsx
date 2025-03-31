@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Radar } from "react-chartjs-2";
 import Chart from "chart.js/auto";
 import { getCategoryWiseScores } from "../../services/testAttemptService";
+import "chartjs-plugin-datalabels"; // Import Data Labels Plugin
 
 const RadarChart = () => {
   const [categoryData, setCategoryData] = useState({});
@@ -18,7 +19,7 @@ const RadarChart = () => {
       setCategoryData(response);
 
       // Select the top 5 categories by default
-      const top5Categories = Object.keys(response).slice(0, 5); // Assuming the API returns sorted categories
+      const top5Categories = Object.keys(response).slice(0, 5);
 
       setSelectedCategories(top5Categories);
       updateChart(top5Categories, response);
@@ -44,18 +45,19 @@ const RadarChart = () => {
         0
       );
 
-      return totalMarks > 0 ? (finalScore / totalMarks) * 100 : 0;
+      return totalMarks > 0 ? Math.round((finalScore / totalMarks) * 100) : 0;
     });
 
     setChartData({
       labels: categories,
       datasets: [
         {
-          label: "Average Score (%)",
+          label: "Average Score",
           data: scores,
-          backgroundColor: "rgba(0, 123, 255, 0.2)",
-          borderColor: "#007bff",
-          pointBackgroundColor: "#007bff",
+          backgroundColor: "rgba(30, 144, 255, 0.2)", // Light version of #1E90FF
+          borderColor: "#1E90FF", // Main color
+          pointBackgroundColor: "#1E90FF", // Dots color
+          pointBorderColor: "#1E90FF",
         },
       ],
     });
@@ -82,18 +84,16 @@ const RadarChart = () => {
           type="button"
           data-bs-toggle="dropdown"
           aria-expanded="false"
-          style={{ width: "250px" }} // Adjust button width if needed
+          style={{ width: "250px" }}
         >
-          Select Categories
+          Select Category
         </button>
         <ul
           className="dropdown-menu p-2"
-          style={{ maxHeight: "200px", overflowY: "auto", minWidth: "250px" }} // Scrollable dropdown
+          style={{ maxHeight: "200px", overflowY: "auto", minWidth: "250px" }}
         >
           {Object.keys(categoryData).map((category) => (
             <li key={category} style={{ padding: "5px 10px" }}>
-              {" "}
-              {/* Left-align items */}
               <label
                 className="dropdown-item d-flex align-items-center"
                 style={{ gap: "8px", padding: "5px" }}
@@ -103,10 +103,9 @@ const RadarChart = () => {
                   checked={selectedCategories.includes(category)}
                   onChange={() => handleCategoryChange(category)}
                   className="me-2"
-                  style={{ width: "14px", height: "14px" }} // Smaller checkbox
+                  style={{ width: "14px", height: "14px" }}
                 />
-                <span style={{ fontSize: "14px" }}>{category}</span>{" "}
-                {/* Smaller text */}
+                <span style={{ fontSize: "14px" }}>{category}</span>
               </label>
             </li>
           ))}
@@ -122,12 +121,24 @@ const RadarChart = () => {
             scales: {
               r: { beginAtZero: true, max: 100 },
             },
+            plugins: {
+              legend: { display: false }, // Hide legend
+              datalabels: {
+                display: false,
+                color: "#1E90FF",
+                font: {
+                  size: 14,
+                  weight: "bold",
+                },
+                formatter: (value) => Math.round(value), // Show only digits
+              },
+            },
           }}
         />
       ) : (
         <p>Select at least one category to view the chart.</p>
       )}
-      <h4>performance by category average score</h4>
+      <h4>Average score by category</h4>
     </div>
   );
 };

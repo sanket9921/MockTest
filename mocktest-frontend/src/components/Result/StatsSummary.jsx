@@ -13,7 +13,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const StatsSummary = ({ stats }) => {
+const StatsSummary = ({ stats, correctAnswers }) => {
   // Ensure valid values
   const correct = stats.correct_answers || 0;
   const incorrect = stats.incorrect_answers || 0;
@@ -30,7 +30,7 @@ const StatsSummary = ({ stats }) => {
     datasets: [
       {
         data: [marksGained, negativeMarks, unattempted],
-        backgroundColor: ["#28a745", "#dc3545", "#6c757d"],
+        backgroundColor: ["#5cb85c", "#e57373", "#a0a5aa"],
         hoverBackgroundColor: ["#218838", "#c82333", "#5a6268"],
       },
     ],
@@ -39,29 +39,31 @@ const StatsSummary = ({ stats }) => {
   // 📊 Score Summary Data
   const statItems = [
     {
-      label: "Percentage %",
-      value: ((stats.final_score / stats.total_marks) * 100).toFixed(2) + "%",
-      icon: <FaPercentage className="text-primary fs-4" />,
-    },
-    {
-      label: "Final Score",
-      value: stats.final_score,
-      icon: <FaTrophy className="text-warning fs-4" />,
-    },
-    {
-      label: "Attempted Questions",
-      value: stats.attempted_questions,
-      icon: <FaCheckCircle className="text-success fs-4" />,
-    },
-    {
-      label: "Total Marks",
+      label: "Maximum Score",
       value: stats.total_marks,
       icon: <FaList className="text-secondary fs-4" />,
     },
     {
-      label: "Marks Gained",
-      value: stats.marks_gained,
+      label: "Attempted / Total questions",
+      value: `${stats.attempted_questions} / ${stats.total_questions}`,
+      icon: <FaCheckCircle className="text-success fs-4" />,
+    },
+
+    {
+      label: "⁠Score obtain",
+      value: stats.final_score,
+      icon: <FaTrophy className="text-warning fs-4" />,
+    },
+
+    {
+      label: "Correct answers",
+      value: correctAnswers,
       icon: <FaStar className="text-info fs-4" />,
+    },
+    {
+      label: "Percentage Score",
+      value: ((stats.final_score / stats.total_marks) * 100).toFixed(2) + "%",
+      icon: <FaPercentage className="text-primary fs-4" />,
     },
     {
       label: "Negative Marks",

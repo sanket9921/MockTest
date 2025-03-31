@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import Chart from "chart.js/auto";
+import ChartDataLabels from "chartjs-plugin-datalabels"; // Import the plugin
 import { getCategoryWiseScores } from "../../services/testAttemptService";
 
 const BarChart = () => {
@@ -47,7 +48,7 @@ const BarChart = () => {
       return totalMarks > 0 ? (finalScore / totalMarks) * 100 : 0;
     });
 
-    const barColors = ["#66a3ee", "#007bff", "#0066d6"]; // 3 Different shades of blue
+    const barColors = ["#78BCFF", "#4FA9FF", "#1E90FF"]; // 3 Different shades of blue
 
     chartInstance.current = new Chart(ctx, {
       type: "bar",
@@ -57,8 +58,6 @@ const BarChart = () => {
           {
             label: "Percentage Score (%)",
             backgroundColor: barColors,
-            borderColor: "#004080",
-            borderWidth: 1,
             data: percentages,
             categoryPercentage: 0.5, // Ensures bars take full width, reducing gaps
             barPercentage: 1.7, // Reduces gap between bars while keeping them wide
@@ -83,29 +82,29 @@ const BarChart = () => {
         },
         plugins: {
           datalabels: {
-            display: false, // Hide numbers inside bars
+            formatter: (value) => value.toFixed(0), // Show only digits (no decimal)
+            font: {
+              size: 16, // Make labels larger
+              weight: "bold", // Make labels bold
+            },
+            color: "White", // Ensure visibility
           },
           legend: {
             display: false, // Hide legend
           },
         },
       },
+      // plugins: [ChartDataLabels], // Register the plugin
     });
   };
 
   return (
-    <div style={{ width: "100%", margin: "0 auto", textAlign: "center" }}>
+    <div style={{ width: "100%", textAlign: "center" }}>
       {/* Category Dropdown */}
       <select
-        className="form-select mb-3"
+        className="form-select rounded mb-3 custom-select"
         value={selectedCategory}
         onChange={(e) => setSelectedCategory(e.target.value)}
-        style={{
-          fontSize: "16px",
-          padding: "8px 12px",
-          width: "250px",
-          float: "right",
-        }} // Adjust width & padding
       >
         {Object.keys(categoryData).map((category) => (
           <option key={category} value={category}>
@@ -116,7 +115,7 @@ const BarChart = () => {
 
       {/* Bar Chart */}
       <canvas ref={chartRef}></canvas>
-      <h4 className="text-center mt-2">Difficulty level wise Performance</h4>
+      <h4 className="text-center mt-2">Performance by Difficulty Level</h4>
     </div>
   );
 };
